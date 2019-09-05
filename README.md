@@ -30,3 +30,6 @@ load and stack image file of medImgProc image format with string formating in ru
 
 ### loadmat(fileName,arrayName='',dim=[],dimlen={},dtype=None):
 load matlab file to medImgProc image format
+
+### show(imageClass):
+show image

@@ -41,6 +41,8 @@ External Functions
 def imread(imageFile,dimension=None,fileFormat='',crop=None,module=''):
     newImage=image.image(imageFile,dimension=dimension,fileFormat=fileFormat,crop=crop,module=module)
     return newImage
+def imwrite(imageClass,filePath,axes=['y','x'],imageFormat='png',dimRange={},fps=3,color=0):
+    imageClass.imwrite2D(filePath,axes=axes,imageFormat=imageFormat,dimRange=dimRange,fps=fps,color=color)
 def stackImage(imageList,newDim):
     newImage=imageList[0].clone()
     newImage.addDim(newDim)
@@ -59,8 +61,10 @@ def stretch(imageClass,stretchDim,scheme=image.DEFAULT_INTERPOLATION_SCHEME):
     newImage=imageClass.clone()
     newImage.stretch(stretchDim,scheme=scheme)
     return newImage
-def load(file):
-    with open(file, 'rb') as input:
+def save(imageClass,filePath):
+    imageClass.save(filePath)
+def load(filePath):
+    with open(filePath, 'rb') as input:
         outObj = pickle.load(input)
     return outObj
 def loadStack(imageFileFormat,dimension=None,maxskip=0):
@@ -117,5 +121,6 @@ def loadmat(fileName,arrayName='',dim=[],dimlen={},dtype=None):
         newImage.data=newImage.data.astype(dtype)
         newImage.dtype=dtype
     return newImage
+def show(imageClass):
+    imageClass.show()
     
-        

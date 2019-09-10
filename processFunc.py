@@ -25,23 +25,28 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 from scipy.ndimage.interpolation import shift
 from scipy.ndimage.interpolation import rotate
 from scipy.optimize import curve_fit
-try:
-    import multiprocessing
-except:
-    pass
-import cv2
+
 import inspect
 import trimesh
-try:
-    import SimpleITK as sitk
-except:
-    pass
 import image
 import GUI
 import re
 import scipy.io as sio
 import pickle
 import pywt
+
+try:
+    import multiprocessing
+except:
+    pass
+try:
+    import cv2
+except:
+    pass
+try:
+    import SimpleITK as sitk
+except:
+    pass
 '''
 default variables
 '''

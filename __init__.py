@@ -16,7 +16,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-print('medImgProc version 1.0.1')
+print('medImgProc version 1.2.0')
 
 
 import numpy as np

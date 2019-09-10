@@ -10,7 +10,7 @@ setup(
   url = 'https://github.com/WeiXuanChan/medImgProc',   # Provide either the link to your github or to your website
   download_url = 'https://github.com/WeiXuanChan/medImgProc/archive/v1.0.0.tar.gz',    # I explain this later on
   keywords = ['medical', 'image'],   # Keywords that define your package best
-  install_requires=['numpy','matplotlib','imageio','scipy','pickle','inspect','trimesh','re','pywt'],
+  install_requires=['numpy','matplotlib','imageio','scipy','pickle','trimesh'],
   classifiers=[
     'Development Status :: 5 - Production/Stable',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package    
     'Intended Audience :: Developers',      # Define that your audience are developers

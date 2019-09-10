@@ -33,3 +33,6 @@ load matlab file to medImgProc image format
 
 ### show(imageClass):
 show image
+
+## Note
+Simple Elastix (https://simpleelastix.github.io/) and OpenCV need to be installed manually  to use certain processing functions.

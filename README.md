@@ -36,3 +36,7 @@ show image
 
 ## Note
 Simple Elastix (https://simpleelastix.github.io/) and OpenCV need to be installed manually  to use certain processing functions.
+
+### Installation
+If your default python is python3:
+pip install medImgProc

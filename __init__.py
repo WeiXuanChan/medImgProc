@@ -20,7 +20,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.3.0'
+_version='1.3.1'
 print('medImgProc version',_version)
 
 

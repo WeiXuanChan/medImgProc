@@ -6,8 +6,9 @@ History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
   Author: w.x.chan@gmail.com         12JAN2018           - Created
-    Author: w.x.chan@gmail.com         13SEP2018           - v1.2.0
+    Author: w.x.chan@gmail.com         13SEP2018           - v1.3.0
                                                               -addded resolutionLevel for TmapRegister
+                                                              -added twoD for TmapRegister_img2img
 
 Requirements:
     numpy.py
@@ -19,7 +20,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.2.0'
+_version='1.3.0'
 
 import numpy as np
 import os

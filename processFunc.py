@@ -6,6 +6,8 @@ History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
   Author: w.x.chan@gmail.com         12JAN2018           - Created
+    Author: w.x.chan@gmail.com         13SEP2018           - v1.2.0
+                                                              -addded resolutionLevel for TmapRegister
 
 Requirements:
     numpy.py
@@ -17,6 +19,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
+_version='1.2.0'
 
 import numpy as np
 import os
@@ -842,17 +845,12 @@ def vectorRegister(image,savePath='',stlRefDim={},baseRefFraction=1.,baseRefFunc
         if baseRefFraction!=1.:
             np.savetxt(pointfile+'Output/outputpoints.pts',newPixelVertice,header='point\n'+str(len(pixelVertice)),comments='')
 
-def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=False,startTime=0,scaleImg=1.,writeImg=False,twoD=False):
+def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=False,startTime=0,scaleImg=1.,writeImg=False,twoD=False,nres =3,smoothing=True):
     image=image.clone()
-    if type(scaleImg)!=type(None):
-        if twoD:
-            for axis in ['x','y']:
-                if axis in image.dimlen:
-                    image.dimlen[axis]=image.dimlen[axis]*scaleImg
-        else:
-            for axis in ['x','y','z']:
-                if axis in image.dimlen:
-                    image.dimlen[axis]=image.dimlen[axis]*scaleImg
+    if scaleImg!=1:
+        for axis in ['x','y','z']:
+            if axis in image.dimlen:
+                image.dimlen[axis]=image.dimlen[axis]*scaleImg
     if not(savePath):
         savePath=os.path.dirname(os.path.realpath(__file__))
     '''adjust imageToSTLsize'''
@@ -890,9 +888,20 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
     #bspline["Metric"]=(*bspline["Metric"],"DisplacementMagnitudePenalty")
     if rms:
         bspline["Metric"]=("AdvancedMeanSquares",bspline["Metric"][1])
+
     #parameterMapVector.append(affine)
     parameterMapVector.append(bspline)
     
+    if nres != 3:
+        for trans in parameterMapVector:
+            trans["NumberOfResolutions"] = (str(nres),)
+            if smoothing:
+                if twoD:
+                    trans["FixedImagePyramidSchedule"] =  tuple(np.repeat(2**np.arange(nres), 2).astype(str))
+                    trans["MovingImagePyramidSchedule"] = tuple(np.repeat(2**np.arange(nres), 2).astype(str))
+                else:
+                    trans["FixedImagePyramidSchedule"] =  tuple(np.repeat(2**np.arange(nres), 3).astype(str))
+                    trans["MovingImagePyramidSchedule"] = tuple(np.repeat(2**np.arange(nres), 3).astype(str))
     
     '''start'''
     colorVec=False
@@ -945,9 +954,15 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
             sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t0to'+str(n+1)+'_'+str(m)+'.txt')
         if writeImg:
             sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t0to'+str(n+1)+'_resultImg.mha')
-def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',tInd=None,origin1=(0.,0.,0.),origin2=(0.,0.,0.),EulerTransformCorrection=False,rms=False,bgrid=2.,bweight=1.):
+def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',scaleImg=1.,tInd=None,origin1=(0.,0.,0.),origin2=(0.,0.,0.),EulerTransformCorrection=False,rms=False,bgrid=2.,bweight=1.,twoD=False,nres =3,smoothing=True):
     image1=image1.clone()
     image2=image2.clone()
+    if scaleImg!=1:
+        for axis in ['x','y','z']:
+            if axis in image1.dimlen:
+                image1.dimlen[axis]=image1.dimlen[axis]*scaleImg
+            if axis in image2.dimlen:
+                image2.dimlen[axis]=image2.dimlen[axis]*scaleImg
     if not(savePath):
         savePath=os.path.dirname(os.path.realpath(__file__))
     '''adjust imageToSTLsize'''
@@ -967,8 +982,16 @@ def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',tInd=None,
     '''
     os.makedirs(savePath, exist_ok=True)
     os.makedirs(savePath+'/transform', exist_ok=True)
-    spacing1=(image1.dimlen['x'],image1.dimlen['y'],image1.dimlen['z'])
-    spacing2=(image2.dimlen['x'],image2.dimlen['y'],image2.dimlen['z'])
+    if twoD:
+        spacing1=(image1.dimlen['x'],image1.dimlen['y'])
+        spacing2=(image2.dimlen['x'],image2.dimlen['y'])
+        if len(origin1)>2:
+            origin1=origin1[:2]
+        if len(origin2)>2:
+            origin2=origin2[:2]
+    else:
+        spacing1=(image1.dimlen['x'],image1.dimlen['y'],image1.dimlen['z'])
+        spacing2=(image2.dimlen['x'],image2.dimlen['y'],image2.dimlen['z'])
     
     parameterMapVector = sitk.VectorOfParameterMap()
     EulerTransform=sitk.GetDefaultParameterMap("rigid")
@@ -990,6 +1013,16 @@ def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',tInd=None,
         parameterMapVector.append(EulerTransform)
     parameterMapVector.append(bspline)
     
+    if nres != 3:
+        for trans in parameterMapVector:
+            trans["NumberOfResolutions"] = (str(nres),)
+            if smoothing:
+                if twoD:
+                    trans["FixedImagePyramidSchedule"] =  tuple(np.repeat(2**np.arange(nres), 2).astype(str))
+                    trans["MovingImagePyramidSchedule"] = tuple(np.repeat(2**np.arange(nres), 2).astype(str))
+                else:
+                    trans["FixedImagePyramidSchedule"] =  tuple(np.repeat(2**np.arange(nres), 3).astype(str))
+                    trans["MovingImagePyramidSchedule"] = tuple(np.repeat(2**np.arange(nres), 3).astype(str))
     
     '''start'''
     colorVec=False

@@ -13,7 +13,7 @@ setup(
   install_requires=['numpy','matplotlib','imageio','scipy','trimesh'],
   extras_require = {
         'auto read dimlen in imread':  ['medpy']
-  }
+  },
   classifiers=[
     'Development Status :: 5 - Production/Stable',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package    
     'Intended Audience :: Developers',      # Define that your audience are developers

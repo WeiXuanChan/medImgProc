@@ -6,7 +6,7 @@ History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
   Author: w.x.chan@gmail.com         12JAN2018           - Created
-  Author: w.x.chan@gmail.com         12JAN2018           - v1.3.0
+  Author: w.x.chan@gmail.com         12JAN2018           - v1.3.2
                                                             -processFunc v1.3.0
                                                             -Image v1.0.0
                                                             -GUI v1.0.0
@@ -20,7 +20,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.3.1'
+_version='1.3.2'
 print('medImgProc version',_version)
 
 

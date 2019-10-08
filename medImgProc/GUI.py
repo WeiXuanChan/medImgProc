@@ -8,8 +8,9 @@ History:
   Author: w.x.chan@gmail.com         12JAN2018           - Created
 Author: w.x.chan@gmail.com           08OCT2018           - v1.4.0
                                                               -added colortoggler
-Author: w.x.chan@gmail.com           08OCT2018           - v1.5.1
+Author: w.x.chan@gmail.com           08OCT2018           - v1.5.2
                                                               -added Intensity scaling
+                                                              - lower slider
 Requirements:
     numpy.py
     matplotlib.py
@@ -19,7 +20,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.5.1'
+_version='1.5.2'
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -204,7 +205,7 @@ class image2DGUI:
         
     def loadImageFrame(self):
         self.ax = self.fig.add_subplot(111)
-        self.fig.subplots_adjust(bottom=(len(self.showIndex)+2)*0.04)
+        self.fig.subplots_adjust(bottom=(len(self.showIndex)+3)*0.04)
         showImage=getLastTwoDimArray(self.image.data,self.showIndex,color=self.color)
         if self.color:
             showImage[...,tuple(self.colorToggler)]=0

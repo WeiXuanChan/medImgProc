@@ -181,7 +181,7 @@ class image2DGUI:
     def showNewFrame(self):
         newShowImage=getLastTwoDimArray(self.image.data,self.showIndex,color=self.color)
         if self.color:
-            newShowImage[...,self.colorToggler]=0
+            newShowImage[...,tuple(self.colorToggler)]=0
         self.main.set_data(newShowImage)
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
         self.showNewPoints()
@@ -199,7 +199,7 @@ class image2DGUI:
         self.fig.subplots_adjust(bottom=len(self.showIndex)*0.04)
         showImage=getLastTwoDimArray(self.image.data,self.showIndex,color=self.color)
         if self.color:
-            showImage[...,self.colorToggler]=0
+            showImage[...,tuple(self.colorToggler)]=0
         self.main=self.ax.imshow(showImage,cmap=matplotlib.cm.gray, vmin=0, vmax=255)
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
 

@@ -16,7 +16,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.0.0'
+_version='1.4.0'
 
 import numpy as np
 import matplotlib.pyplot as plt

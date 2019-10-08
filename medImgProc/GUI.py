@@ -8,6 +8,8 @@ History:
   Author: w.x.chan@gmail.com         12JAN2018           - Created
 Author: w.x.chan@gmail.com           08OCT2018           - v1.4.0
                                                               -added colortoggler
+Author: w.x.chan@gmail.com           08OCT2018           - v1.5.0
+                                                              -added Intensity scaling
 Requirements:
     numpy.py
     matplotlib.py
@@ -17,7 +19,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.4.0'
+_version='1.5.0'
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -69,6 +71,7 @@ class image2DGUI:
         if type(imageClass)==str:
             self.image=medImgProc.imread(imageClass)
         self.image=imageClass.clone()
+        self.image.data=np.maximum(0,self.image.data)
         self.color=0
         if 'RGB' in self.image.dim:
             self.image.rearrangeDim('RGB',False)
@@ -89,7 +92,8 @@ class image2DGUI:
             self.connectionID.append(self.fig.canvas.mpl_connect('button_press_event', self.onclick))
         self.connectionID.append(self.fig.canvas.mpl_connect('key_press_event',self.onKeypress))   
         self.enter=False
-        
+        self.scaleVisual=1.
+        self.logVisual=0.
         
         
         '''
@@ -113,6 +117,8 @@ class image2DGUI:
     def sliderUpdate(self,val):
         for n in range(len(self.showIndex)-2):
             self.showIndex[n]=int(self.sSlide[n].val)
+        self.scaleVisual=int(self.sSlide[-2].val)
+        self.logVisual=int(self.sSlide[-1].val)
         self.showNewFrame()
     def onclick(self,event):
         if not(event.dblclick) and event.button==1 and event.inaxes==self.ax:
@@ -183,6 +189,7 @@ class image2DGUI:
         newShowImage=getLastTwoDimArray(self.image.data,self.showIndex,color=self.color)
         if self.color:
             newShowImage[...,tuple(self.colorToggler)]=0
+        newShowImage=np.maximum(0,np.minimum(255,(newShowImage*self.scaleVisual)**(10.**self.logVisual))).astype('uint8')
         self.main.set_data(newShowImage)
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
         self.showNewPoints()
@@ -201,6 +208,7 @@ class image2DGUI:
         showImage=getLastTwoDimArray(self.image.data,self.showIndex,color=self.color)
         if self.color:
             showImage[...,tuple(self.colorToggler)]=0
+        showImage=np.maximum(0,np.minimum(255,(showImage*self.scaleVisual)**(10.**self.logVisual))).astype('uint8')
         self.main=self.ax.imshow(showImage,cmap=matplotlib.cm.gray, vmin=0, vmax=255)
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
 
@@ -219,6 +227,12 @@ class image2DGUI:
             self.axslide.append(self.fig.add_axes([0.1, 0.02+n*0.04, 0.65, 0.03], facecolor=axcolor))
             self.sSlide.append(Slider(self.axslide[-1], self.image.dim[n], 0, self.image.data.shape[n]-1, valinit=self.showIndex[n],valfmt="%i"))
             self.sSlide[-1].on_changed(self.sliderUpdate)
+        self.axslide.append(self.fig.add_axes([0.1, 0.02+(len(self.showIndex)-2)*0.04, 0.65, 0.03], facecolor=axcolor))
+        self.sSlide.append(Slider(self.axslide[-1], 'Iscale', 0.1, 10., valinit=self.scaleVisual,valstep=0.1))
+        self.sSlide[-1].on_changed(self.sliderUpdate)
+        self.axslide.append(self.fig.add_axes([0.1, 0.02+(len(self.showIndex)-1)*0.04, 0.65, 0.03], facecolor=axcolor))
+        self.sSlide.append(Slider(self.axslide[-1], 'logPOW', -1, 1, valinit=self.logVisual,valstep=0.1))
+        self.sSlide[-1].on_changed(self.sliderUpdate)
         
     def removeLastPoint(self):
         self.points=self.points[:-1,:]

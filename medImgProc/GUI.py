@@ -6,7 +6,8 @@ History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
   Author: w.x.chan@gmail.com         12JAN2018           - Created
-
+Author: w.x.chan@gmail.com           08OCT2018           - v1.4.0
+                                                              -added colortoggler
 Requirements:
     numpy.py
     matplotlib.py

@@ -8,7 +8,7 @@ History:
   Author: w.x.chan@gmail.com         12JAN2018           - Created
   Author: w.x.chan@gmail.com         08OCT2018           - v1.4.2
                                                               -debug changeColorFormat
-  Author: w.x.chan@gmail.com         08OCT2018           - v1.5.3
+  Author: w.x.chan@gmail.com         08OCT2018           - v1.5.4
                                                               -debug imwrite2D for color image
 
 Requirements:
@@ -20,7 +20,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.5.3'
+_version='1.5.4'
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -510,6 +510,8 @@ class image:
         os.makedirs(filePath, exist_ok=True)
         if axes[-1] in ['RGB','RGBA']:
             color=1
+        if color==1 and not(axes[-1] in ['RGB','RGBA']):
+            axes+=['RGB']
         saveData=np.copy(self.data)
         currentDim=self.dim[:]
         for dimension in currentDim:#apply function to all 

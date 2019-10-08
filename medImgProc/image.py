@@ -6,6 +6,8 @@ History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
   Author: w.x.chan@gmail.com         12JAN2018           - Created
+  Author: w.x.chan@gmail.com         08OCT2018           - v1.4.2
+                                                              -debug changeColorFormat
 
 Requirements:
     numpy.py
@@ -16,7 +18,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.0.0'
+_version='1.4.2'
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -66,7 +68,7 @@ def dataInColorFormat(imageClass,colorFormat):
     elif colorFormat=='RGB':
         dimAcsCount=list(range(1,len(imageClass.data.shape)+1))
         imageArray=np.array([imageClass.data[:],imageClass.data[:],imageClass.data[:]])
-        return imageArray.transpose(dimAcsCount,0)
+        return imageArray.transpose(*dimAcsCount,0)
     else:
         print('Error: color format is not supported.')
 def dataInGreyscaleFormat(imageClass):

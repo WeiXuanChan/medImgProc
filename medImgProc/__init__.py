@@ -10,7 +10,7 @@ History:
                                                             -processFunc v1.3.0
                                                             -Image v1.0.0
                                                             -GUI v1.0.0
-  Author: w.x.chan@gmail.com         12JAN2018           - v1.4.0
+  Author: w.x.chan@gmail.com         12JAN2018           - v1.4.1
                                                             -processFunc v1.3.0
                                                             -Image v1.0.0
                                                             -GUI v1.4.0
@@ -24,7 +24,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.4.0'
+_version='1.4.1'
 print('medImgProc version',_version)
 
 

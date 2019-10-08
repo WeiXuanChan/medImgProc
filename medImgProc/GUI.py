@@ -232,7 +232,7 @@ class image2DGUI:
         self.sSlide.append(Slider(self.axslide[-1], 'Iscale', 0.1, 10., valinit=self.scaleVisual,valstep=0.1))
         self.sSlide[-1].on_changed(self.sliderUpdate)
         self.axslide.append(self.fig.add_axes([0.1, 0.02+(len(self.showIndex)-1)*0.04, 0.65, 0.03], facecolor=axcolor))
-        self.sSlide.append(Slider(self.axslide[-1], 'logPOW', -1, 1, valinit=self.logVisual,valstep=0.1))
+        self.sSlide.append(Slider(self.axslide[-1], 'logPOW', -1., 1., valinit=self.logVisual,valstep=0.02))
         self.sSlide[-1].on_changed(self.sliderUpdate)
         
     def removeLastPoint(self):

@@ -75,6 +75,9 @@ class image2DGUI:
         elif 'RGBA' in self.image.dim:
             self.image.rearrangeDim('RGBA',False)
             self.color=1
+        if self.color==1:
+            self.addInstruct+='press 1,2,3,.. to toggler color channel and 0 to show all.\n '
+            self.colorToggler=[]
         self.fig=plt.figure(1)
         self.showIndex=[]
         for n in range(len(self.image.data.shape)-self.color):
@@ -136,6 +139,15 @@ class image2DGUI:
             self.switchFrame(-4,-1)
         elif event.key=='ctrl+z':
             self.removeLastPoint()
+        elif self.color==1 and event.key=='0':
+            self.colorToggler=[]
+            self.showNewFrame()
+        elif self.color==1 and event.key in ['1','2','3','4','5','6','7','8','9']:
+            if (int(event.key)-1) in self.colorToggler:
+                self.colorToggler.remove(int(event.key)-1)
+            elif self.image.data.shape[-1] > (int(event.key)-1):
+                self.colorToggler+=[int(event.key)-1]
+            self.showNewFrame()
         elif event.key in self.image.dim:
             self.swapFrame(event.key)
         else:
@@ -168,6 +180,8 @@ class image2DGUI:
             self.showNewFrame()
     def showNewFrame(self):
         newShowImage=getLastTwoDimArray(self.image.data,self.showIndex,color=self.color)
+        if self.color:
+            newShowImage[...,self.colorToggler]=0
         self.main.set_data(newShowImage)
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
         self.showNewPoints()
@@ -184,6 +198,8 @@ class image2DGUI:
         self.ax = self.fig.add_subplot(111)
         self.fig.subplots_adjust(bottom=len(self.showIndex)*0.04)
         showImage=getLastTwoDimArray(self.image.data,self.showIndex,color=self.color)
+        if self.color:
+            showImage[...,self.colorToggler]=0
         self.main=self.ax.imshow(showImage,cmap=matplotlib.cm.gray, vmin=0, vmax=255)
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
 

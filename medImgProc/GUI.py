@@ -8,7 +8,7 @@ History:
   Author: w.x.chan@gmail.com         12JAN2018           - Created
 Author: w.x.chan@gmail.com           08OCT2018           - v1.4.0
                                                               -added colortoggler
-Author: w.x.chan@gmail.com           08OCT2018           - v1.5.0
+Author: w.x.chan@gmail.com           08OCT2018           - v1.5.1
                                                               -added Intensity scaling
 Requirements:
     numpy.py
@@ -19,7 +19,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.5.0'
+_version='1.5.1'
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -117,8 +117,8 @@ class image2DGUI:
     def sliderUpdate(self,val):
         for n in range(len(self.showIndex)-2):
             self.showIndex[n]=int(self.sSlide[n].val)
-        self.scaleVisual=int(self.sSlide[-2].val)
-        self.logVisual=int(self.sSlide[-1].val)
+        self.scaleVisual=self.sSlide[-2].val
+        self.logVisual=self.sSlide[-1].val
         self.showNewFrame()
     def onclick(self,event):
         if not(event.dblclick) and event.button==1 and event.inaxes==self.ax:
@@ -204,7 +204,7 @@ class image2DGUI:
         
     def loadImageFrame(self):
         self.ax = self.fig.add_subplot(111)
-        self.fig.subplots_adjust(bottom=len(self.showIndex)*0.04)
+        self.fig.subplots_adjust(bottom=(len(self.showIndex)+2)*0.04)
         showImage=getLastTwoDimArray(self.image.data,self.showIndex,color=self.color)
         if self.color:
             showImage[...,tuple(self.colorToggler)]=0

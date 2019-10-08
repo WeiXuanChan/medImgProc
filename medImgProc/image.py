@@ -8,6 +8,8 @@ History:
   Author: w.x.chan@gmail.com         12JAN2018           - Created
   Author: w.x.chan@gmail.com         08OCT2018           - v1.4.2
                                                               -debug changeColorFormat
+  Author: w.x.chan@gmail.com         08OCT2018           - v1.5.3
+                                                              -debug imwrite2D for color image
 
 Requirements:
     numpy.py
@@ -18,7 +20,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.4.2'
+_version='1.5.3'
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -529,7 +531,8 @@ class image:
             recursive2DWrite(saveData,currentDim,axes,filePath,imageFormat,dimRange,fps=fps,color=color)
         dimlen_np=[]
         for ti in transposeIndex:
-            dimlen_np.append(self.dimlen[self.dim[ti]])
+            if self.dim[ti] not in ['RGB','RGBA']:
+                dimlen_np.append(self.dimlen[self.dim[ti]])
         dimlen_np=np.array(dimlen_np)
         np.savetxt(os.path.normpath(filePath+'/dimensionLength.txt'),dimlen_np)
         print('Image written to:',filePath)

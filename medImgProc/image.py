@@ -10,6 +10,8 @@ History:
                                                               -debug changeColorFormat
   Author: w.x.chan@gmail.com         08OCT2018           - v1.5.4
                                                               -debug imwrite2D for color image
+  Author: w.x.chan@gmail.com         15OCT2018           - v1.5.5
+                                                              -in imwrite2D, change image dtype to uint8, default vidFormat to 'avi' and default fps to 15
 
 Requirements:
     numpy.py
@@ -20,7 +22,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.5.4'
+_version='1.5.5'
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -506,13 +508,13 @@ class image:
     '''
     Saving data (readable)
     '''
-    def imwrite2D(self,filePath,axes=['y','x'],imageFormat='png',dimRange={},fps=3,color=0):
+    def imwrite2D(self,filePath,axes=['y','x'],imageFormat='png',dimRange={},fps=15,color=0):
         os.makedirs(filePath, exist_ok=True)
         if axes[-1] in ['RGB','RGBA']:
             color=1
-        if color==1 and not(axes[-1] in ['RGB','RGBA']):
+        elif color==1:
             axes+=['RGB']
-        saveData=np.copy(self.data)
+        saveData=np.minimum(255,np.maximum(0,self.data)).astype('uint8')
         currentDim=self.dim[:]
         for dimension in currentDim:#apply function to all 
             if dimension not in dimRange:
@@ -539,7 +541,7 @@ class image:
         np.savetxt(os.path.normpath(filePath+'/dimensionLength.txt'),dimlen_np)
         print('Image written to:',filePath)
         #self.save(os.path.normpath(filePath+'/image.mip'))
-    def mimwrite2D(self,filePath,axes=['t','y','x'],vidFormat='gif',dimRange={},fps=3):
+    def mimwrite2D(self,filePath,axes=['t','y','x'],vidFormat='avi',dimRange={},fps=15):
         self.imwrite2D(filePath,axes=axes,imageFormat=vidFormat,dimRange=dimRange,fps=fps)
     '''
     saving and loading object

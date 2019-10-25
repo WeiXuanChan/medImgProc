@@ -174,9 +174,11 @@ def loadmat(fileName,arrayName='',dim=[],dimlen={},dtype=None):
 def show(imageClass):
     imageClass.show()
 def combine(img1,img2,img3=None):
-    img=img2.clone()
+    img=img1.clone()
     img.changeColorFormat()
-    img.data[...,0]=img1.data.copy()
     if type(img3)!=type(None):
+        img.data[...,1]=img2.data.copy()
         img.data[...,2]=img3.data.copy()
+    else:
+        img.data[...,0]=np.maximum(img2.data,img1.data)
     return img

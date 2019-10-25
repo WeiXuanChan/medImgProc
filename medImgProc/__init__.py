@@ -50,7 +50,7 @@ History:
                                                             -processFunc v1.3.0
                                                             -Image v1.5.5
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         15OCT2018           - v1.6.0
+  Author: w.x.chan@gmail.com         15OCT2018           - v1.6.1
                                                                 -added combine grescale image to color
                                                             -processFunc v1.3.0
                                                             -Image v1.5.5
@@ -65,7 +65,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.6.0'
+_version='1.6.1'
 print('medImgProc version',_version)
 
 

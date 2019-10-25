@@ -50,6 +50,11 @@ History:
                                                             -processFunc v1.3.0
                                                             -Image v1.5.5
                                                             -GUI v1.5.2
+  Author: w.x.chan@gmail.com         15OCT2018           - v1.6.0
+                                                                -added combine grescale image to color
+                                                            -processFunc v1.3.0
+                                                            -Image v1.5.5
+                                                            -GUI v1.5.2
 
 Requirements:
     numpy.py
@@ -60,7 +65,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.5.5'
+_version='1.6.0'
 print('medImgProc version',_version)
 
 
@@ -168,4 +173,10 @@ def loadmat(fileName,arrayName='',dim=[],dimlen={},dtype=None):
     return newImage
 def show(imageClass):
     imageClass.show()
-    
+def combine(img1,img2,img3=None):
+    img=img2.clone()
+    img.changeColorFormat()
+    img.data[...,0]=img1.data.copy()
+    if type(img3)!=type(None):
+        img.data[...,2]=img3.data.copy()
+    return img

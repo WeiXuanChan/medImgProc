@@ -61,9 +61,12 @@ History:
                                                             -Image v1.6.2
                                                             -GUI v1.5.2
   Author: w.x.chan@gmail.com         29OCT2018           - v1.6.4
-                                                                -added point based combine to function combine
                                                             -processFunc v1.3.0
                                                             -Image v1.6.4
+                                                            -GUI v1.5.2
+  Author: w.x.chan@gmail.com         29OCT2018           - v1.6.5
+                                                            -processFunc v1.3.0
+                                                            -Image v1.6.5
                                                             -GUI v1.5.2
 
 Requirements:
@@ -75,7 +78,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.6.4'
+_version='1.6.5'
 print('medImgProc version',_version)
 
 

@@ -55,6 +55,11 @@ History:
                                                             -processFunc v1.3.0
                                                             -Image v1.5.5
                                                             -GUI v1.5.2
+  Author: w.x.chan@gmail.com         29OCT2018           - v1.6.2
+                                                                -added point based combine to function combine
+                                                            -processFunc v1.3.0
+                                                            -Image v1.6.2
+                                                            -GUI v1.5.2
 
 Requirements:
     numpy.py
@@ -65,7 +70,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.6.1'
+_version='1.6.2'
 print('medImgProc version',_version)
 
 
@@ -173,12 +178,17 @@ def loadmat(fileName,arrayName='',dim=[],dimlen={},dtype=None):
     return newImage
 def show(imageClass):
     imageClass.show()
-def combine(img1,img2,img3=None):
+def combine(img1,img2,img3=None,point=False):
+    #img1 is main image
     img=img1.clone()
     img.changeColorFormat()
     if type(img3)!=type(None):
         img.data[...,1]=img2.data.copy()
         img.data[...,2]=img3.data.copy()
+    elif point:
+        img.data[...,0][img2.data>0]=img2.data[img2.data>0]
+        img.data[...,1][img.data[...,0]>0]=255
+        img.data[...,2][img.data[...,0]>0]=0
     else:
         img.data[...,0]=np.maximum(img2.data,img1.data)
     return img

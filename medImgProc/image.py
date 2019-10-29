@@ -16,6 +16,8 @@ History:
                                                               -in added kwarg "color" mimwrite2D
   Author: w.x.chan@gmail.com         29OCT2018           - v1.6.4
                                                               -in image.save, added directory create
+  Author: w.x.chan@gmail.com         29OCT2018           - v1.6.5
+                                                              -in imwrite2D, copy axes before adjusting to prevent consecutive use error
 
 Requirements:
     numpy.py
@@ -26,7 +28,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.6.4'
+_version='1.6.5'
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -512,8 +514,9 @@ class image:
     '''
     Saving data (readable)
     '''
-    def imwrite2D(self,filePath,axes=['y','x'],imageFormat='png',dimRange={},fps=15,color=0):
+    def imwrite2D(self,filePath,axes=('y','x'),imageFormat='png',dimRange={},fps=15,color=0):
         os.makedirs(filePath, exist_ok=True)
+        axes=list(axes)
         if axes[-1] in ['RGB','RGBA']:
             color=1
         elif color==1:
@@ -545,7 +548,7 @@ class image:
         np.savetxt(os.path.normpath(filePath+'/dimensionLength.txt'),dimlen_np)
         print('Image written to:',filePath)
         #self.save(os.path.normpath(filePath+'/image.mip'))
-    def mimwrite2D(self,filePath,axes=['t','y','x'],vidFormat='avi',dimRange={},fps=15,color=0):
+    def mimwrite2D(self,filePath,axes=('t','y','x'),vidFormat='avi',dimRange={},fps=15,color=0):
         self.imwrite2D(filePath,axes=axes,imageFormat=vidFormat,dimRange=dimRange,fps=fps,color=color)
     '''
     saving and loading object
@@ -621,7 +624,7 @@ class image:
     def insertnewImageList(self,newImageList,stackDim):
         for newImage in newImageList:
             self.insertnewImage(newImage,stackDim)
-    def applyFunction(self,func,axes=['y','x'],dimSlice={},funcArgs=()):#use slice(a,b) for otherDimLoc 
+    def applyFunction(self,func,axes=('y','x'),dimSlice={},funcArgs=()):#use slice(a,b) for otherDimLoc 
         newArray=applyFunc(self,func,axes,dimSlice,funcArgs)
         self.data=newArray
         return self

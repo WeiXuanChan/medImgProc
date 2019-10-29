@@ -12,6 +12,8 @@ History:
                                                               -debug imwrite2D for color image
   Author: w.x.chan@gmail.com         15OCT2018           - v1.5.5
                                                               -in imwrite2D, change image dtype to uint8, default vidFormat to 'avi' and default fps to 15
+  Author: w.x.chan@gmail.com         15OCT2018           - v1.6.2
+                                                              -in added kwarg "color" mimwrite2D
 
 Requirements:
     numpy.py
@@ -22,7 +24,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.5.5'
+_version='1.6.2'
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -541,8 +543,8 @@ class image:
         np.savetxt(os.path.normpath(filePath+'/dimensionLength.txt'),dimlen_np)
         print('Image written to:',filePath)
         #self.save(os.path.normpath(filePath+'/image.mip'))
-    def mimwrite2D(self,filePath,axes=['t','y','x'],vidFormat='avi',dimRange={},fps=15):
-        self.imwrite2D(filePath,axes=axes,imageFormat=vidFormat,dimRange=dimRange,fps=fps)
+    def mimwrite2D(self,filePath,axes=['t','y','x'],vidFormat='avi',dimRange={},fps=15,color=0):
+        self.imwrite2D(filePath,axes=axes,imageFormat=vidFormat,dimRange=dimRange,fps=fps,color=color)
     '''
     saving and loading object
     '''

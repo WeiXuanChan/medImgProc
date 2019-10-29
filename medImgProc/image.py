@@ -14,6 +14,8 @@ History:
                                                               -in imwrite2D, change image dtype to uint8, default vidFormat to 'avi' and default fps to 15
   Author: w.x.chan@gmail.com         29OCT2018           - v1.6.2
                                                               -in added kwarg "color" mimwrite2D
+  Author: w.x.chan@gmail.com         29OCT2018           - v1.6.4
+                                                              -in image.save, added directory create
 
 Requirements:
     numpy.py
@@ -24,7 +26,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.6.2'
+_version='1.6.4'
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -549,6 +551,7 @@ class image:
     saving and loading object
     '''
     def save(self,file):
+        os.makedirs(os.path.dirname(file), exist_ok=True)
         with open(file, 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
     '''

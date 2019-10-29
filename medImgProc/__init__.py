@@ -55,7 +55,7 @@ History:
                                                             -processFunc v1.3.0
                                                             -Image v1.5.5
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         29OCT2018           - v1.6.2
+  Author: w.x.chan@gmail.com         29OCT2018           - v1.6.3
                                                                 -added point based combine to function combine
                                                             -processFunc v1.3.0
                                                             -Image v1.6.2
@@ -70,7 +70,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.6.2'
+_version='1.6.3'
 print('medImgProc version',_version)
 
 
@@ -187,8 +187,8 @@ def combine(img1,img2,img3=None,point=False):
         img.data[...,2]=img3.data.copy()
     elif point:
         img.data[...,0][img2.data>0]=img2.data[img2.data>0]
-        img.data[...,1][img.data[...,0]>0]=255
-        img.data[...,2][img.data[...,0]>0]=0
+        img.data[...,1][img2.data>0]=255
+        img.data[...,2][img2.data>0]=0
     else:
         img.data[...,0]=np.maximum(img2.data,img1.data)
     return img

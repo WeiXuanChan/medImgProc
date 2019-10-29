@@ -12,7 +12,7 @@ History:
                                                               -debug imwrite2D for color image
   Author: w.x.chan@gmail.com         15OCT2018           - v1.5.5
                                                               -in imwrite2D, change image dtype to uint8, default vidFormat to 'avi' and default fps to 15
-  Author: w.x.chan@gmail.com         15OCT2018           - v1.6.2
+  Author: w.x.chan@gmail.com         29OCT2018           - v1.6.2
                                                               -in added kwarg "color" mimwrite2D
 
 Requirements:

@@ -477,7 +477,7 @@ def pointsToPlanes(pointList,coordRef,numAxisToSnap=1):
         nearestIndex=int(np.around(coordRef[n][-1]))
         error=np.abs(coordRef[n][-1]-nearestIndex)
         if error<trackError[nearestIndex]:
-            newList[nearealignAxes_translatestIndex]=pointList[n]
+            newList[nearestIndex]=pointList[n]
             newCoordRef[nearestIndex]=coordRef[n]
             trackError[nearestIndex]=error
     if numAxisToSnap>1:
@@ -506,7 +506,7 @@ def collectPointsNearestToIndex(pointsList):
     coordRef=[]
     points=arrangePoints(pointsList,coordRef=coordRef)
     coordRef.append(0)
-    newPoints,newCoordRefalignAxes_translate=pointsToPlanes(points,coordRef)
+    newPoints,newCoordRef=pointsToPlanes(points,coordRef)
     newPoints=fillplanesWithPoints(newPoints)
     return newPoints
 

@@ -624,7 +624,7 @@ class alignAxesClass:
         self.image.rearrangeDim(dimensionkey,True)
         self.image.rearrangeDim(axesToTranslate,False)
         
-        self.extractArray=np.copy(self.image.data[self.dimensionSlice])
+        self.extractArray=np.copy(self.image.data[tuple(self.dimensionSlice)])
         if axisSlice.start is None:
             axisSliceStart=0
         else:

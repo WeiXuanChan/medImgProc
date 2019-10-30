@@ -12,6 +12,8 @@ History:
     Author: w.x.chan@gmail.com         30OCT2019           - v1.6.6
                                                               -corrected masking of alignaxis_translate
                                                               -corrected typo of "alignaxis_translate" in 2 location
+    Author: w.x.chan@gmail.com         30OCT2019           - v1.7.0
+                                                              -added class alignAxesClass to be used for KalmanFilter (for module "motionSegmentation")
 
 Requirements:
     numpy.py
@@ -23,7 +25,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.6.6'
+_version='1.7.0'
 
 import numpy as np
 import os
@@ -593,7 +595,68 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice={},fixedRef=False
     image.data[dimensionSlice]=np.copy(extractArray)
     image.rearrangeDim(returnDim,True)
     return (image,np.array(saveTranslateIndex))
-
+class alignAxesClass:
+    def __init__(self,image,axesToTranslate,refAxis,dimSlice={},includeRotate=False,mask=None,motionOrder=2,temporalSmoothing=3):
+        self.temporalSmoothing=temporalSmoothing
+        self.motionOrder=motionOrder
+        self.image=image.clone()
+        self.axesToTranslate=axesToTranslate
+        self.dimSlice=dimSlice
+        self.includeRotate=includeRotate
+        self.mask=mask
+        axisref=list(refAxis.keys())[0]
+        indexref=refAxis[axisref]
+        '''sanitize dimSlice to remove duplicate in axesToTranslate and refAxis'''
+        axisSlice=slice(image.data.shape[image.dim.index(axisref)])
+        if axisref in dimSlice:
+            axisSlice=dimSlice.pop(axisref)
+        for axis in axesToTranslate:
+            if axis in dimSlice:
+                dimSlice.pop(axis)
+        for axis in dimSlice:
+            if dimSlice[axis]==-1:
+                dimSlice[axis]=slice(image.data.shape[image.dim.index(axis)])
+        dimensionkey=[axisref]
+        self.dimensionSlice=[axisSlice]
+        for dimension in dimSlice:
+            dimensionkey.append(dimension)
+            self.dimensionSlice.append(dimSlice[dimension])
+        self.image.rearrangeDim(dimensionkey,True)
+        self.image.rearrangeDim(axesToTranslate,False)
+        
+        self.extractArray=np.copy(self.image.data[self.dimensionSlice])
+        if axisSlice.start is None:
+            axisSliceStart=0
+        else:
+            axisSliceStart=axisSlice.start
+        if axisSlice.step is None:
+            axisSliceStep=1
+        else:
+            axisSliceStep=axisSlice.step   
+        self.relativeIndexref=int((indexref-axisSliceStart)/axisSliceStep)
+    def predict(self,translateList,*argsNotUsed,**kargsNotUsed):
+        translateList=np.array(translateList)
+        NumberOfData=(self.motionOrder+1)*self.temporalSmoothing
+        ref=self.relativeIndexref
+        n=len(translateList)
+        if n>ref:
+            translateList=np.insert(translateList,ref+1,translateList[0],axis=0)
+        if len(translateList)<NumberOfData:
+            data=np.concatenate((np.repeat(translateList[:1],NumberOfData-len(translateList),axis=0),translateList[:],),axis=0)
+        else:
+            data=translateList[-NumberOfData:]
+        polynomials = np.polyfit(np.arange(-NumberOfData,0), data, self.motionOrder,full=True)
+        prediction=polynomials[0][-1]
+        sumSq=polynomials[1]
+        return (prediction,np.array(sumSq).sum()/NumberOfData+1.)
+    def trackNext(self,translateList,currenttranslate,*argsNotUsed,**kargsNotUsed):
+        ref=self.relativeIndexref
+        n=len(translateList)
+        if n<=ref:
+            n=n-1
+        print('running slice',n)
+        translateIndex=correlation_translate(self.extractArray[ref],self.extractArray[n],np.ones(len(self.axesToTranslate))*0.5,initialTranslate=currenttranslate,includeRotate=self.includeRotate,mask=self.mask)
+        return (translateIndex,1)
 def snapDraw_black(image,axesToSearch,subdivide,drawSize={},lengthWeight=0.7):
     image=image.clone()
     returnDim=image.dim[:]

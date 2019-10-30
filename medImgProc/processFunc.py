@@ -9,6 +9,9 @@ History:
     Author: w.x.chan@gmail.com         13SEP2018           - v1.3.0
                                                               -addded resolutionLevel for TmapRegister
                                                               -added twoD for TmapRegister_img2img
+    Author: w.x.chan@gmail.com         30OCT2019           - v1.6.6
+                                                              -corrected masking of alignaxis_translate
+                                                              -corrected typo of "alignaxis_translate" in 2 location
 
 Requirements:
     numpy.py
@@ -20,7 +23,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.3.0'
+_version='1.6.6'
 
 import numpy as np
 import os
@@ -194,19 +197,27 @@ internal functions
 '''
 def calculate_correlation(imageAArray,imageBArray,mask=None):
     '''Calculate the correlation of two images with variance of intensity'''
+    if type(mask)!=type(None):
+        if len(mask)==len(imageAArray.shape):
+            sliceList=[]
+            for n in range(len(mask)):
+                sliceList.append(slice(mask[n][0],mask[n][1]))
+            maskArray=np.ones(imageAArray.shape)
+            maskArray[sliceList]=0
+        else:
+            maskArray=mask.copy()
+            #maskVal=np.sum((imageAArray[sliceList]-meanA)*(imageBArray[sliceList]-meanB))
+    else:
+        maskArray=np.ones(imageAArray.shape)
     imageAArray=np.copy(imageAArray)
     imageBArray=np.copy(imageBArray)
-    meanA=imageAArray.mean()
-    meanB=imageBArray.mean()
-    stdA=np.std(imageAArray)
-    stdB=np.std(imageBArray)
-    maskVal=0.
-    if type(mask)!=type(None):
-        sliceList=[]
-        for n in range(len(mask)):
-            sliceList.append(slice(mask[n][0],mask[n][1]))
-        maskVal=np.sum((imageAArray[sliceList]-meanA)*(imageBArray[sliceList]-meanB))
-    correl_val=(np.sum((imageAArray-meanA)*(imageBArray-meanB))-maskVal)/stdA/stdB
+    total=maskArray.sum()
+    meanA=np.sum(imageAArray*maskArray)/total
+    meanB=np.sum(imageBArray*maskArray)/total
+    stdA=np.sqrt(np.sum((imageAArray-meanA)**2*maskArray)/total)
+    stdB=np.sqrt(np.sum((imageBArray-meanB)**2*maskArray)/total)
+    
+    correl_val=np.sum((imageAArray-meanA)*(imageBArray-meanB)*maskArray)/stdA/stdB
     return correl_val
     
 def translateArray(oldArray,translateLastaxes,includeRotate,fill):

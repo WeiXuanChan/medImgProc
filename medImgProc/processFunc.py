@@ -15,6 +15,8 @@ History:
     Author: w.x.chan@gmail.com         30OCT2019           - v1.7.0
                                                               -added class alignAxesClass to be used for KalmanFilter (for module "motionSegmentation")
                                                               -return new position for transform_img2img
+    Author: w.x.chan@gmail.com         31OCT2019           - v1.7.1
+                                                              -in transform_img2img, assign moving img when not specified
                                                               
 
 Requirements:
@@ -27,7 +29,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.7.0'
+_version='1.7.1'
 
 import numpy as np
 import os
@@ -1314,6 +1316,8 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
     transformixImageFilter.SetTransformParameterMap(Tmap)
     if mhaFile=='':
         transformixImageFilter.SetMovingImage(sitk.ReadImage(savePath+'/t0Img.mha'))
+    elif type(stlFile)!=str::
+        transformixImageFilter.SetMovingImage(sitk.GetImageFromArray(np.zeros(np.ceil(oriPos.max(axis=0)*1.1).astype(int)), isVector=False))
     else:
         transformixImageFilter.SetMovingImage(sitk.ReadImage(mhaFile))
     

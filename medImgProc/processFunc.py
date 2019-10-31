@@ -14,6 +14,8 @@ History:
                                                               -corrected typo of "alignaxis_translate" in 2 location
     Author: w.x.chan@gmail.com         30OCT2019           - v1.7.0
                                                               -added class alignAxesClass to be used for KalmanFilter (for module "motionSegmentation")
+                                                              -return new position for transform_img2img
+                                                              
 
 Requirements:
     numpy.py
@@ -1296,7 +1298,9 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
     if savePath=='':
         savePath=stlFile[:-4]
     os.makedirs(savePath, exist_ok=True)
-    if stlFile[-3:]=='stl':
+    if type(stlFile)!=str:
+        oriPos=stlFile
+    elif stlFile[-3:]=='stl':
         ref_mesh=trimesh.load(stlFile)
         oriPos=np.array(ref_mesh.vertices)/scale
     else:
@@ -1325,11 +1329,11 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
         newPos.append(np.fromstring(result.group(1)[5:-6], sep=' '))
     newPos=np.array(newPos)
     if stlFile[-3:]=='stl':
-        ref_mesh.vertices=np.array(newPos)*scale
+        ref_mesh.vertices=newPos*scale
         trimesh.io.export.export_mesh(ref_mesh,savePath+'/'+fileName+'.stl')
     else:
-        np.savetxt(savePath+'/'+fileName+'.txt',np.array(newPos)*scale)
-
+        np.savetxt(savePath+'/'+fileName+'.txt',newPos*scale)
+    return newPos*scale
 def fittransform(savePath,timeStepNo,addSaveStr='_cumulative'):
     data=[]
     for n in range(timeStepNo):

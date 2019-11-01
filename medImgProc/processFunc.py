@@ -1316,10 +1316,11 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
     transformixImageFilter.SetTransformParameterMap(Tmap)
     if os.path.isfile(mhaFile):
         transformixImageFilter.SetMovingImage(sitk.ReadImage(mhaFile))
-    elif type(stlFile)!=str:
-        transformixImageFilter.SetMovingImage(sitk.GetImageFromArray(np.zeros(np.ceil(oriPos.max(axis=0)*1.1).astype(int)), isVector=False))
-    else:
+    elif os.path.isfile(savePath+'/t0Img.mha'):
         transformixImageFilter.SetMovingImage(sitk.ReadImage(savePath+'/t0Img.mha'))
+    else:
+        transformixImageFilter.SetMovingImage(sitk.GetImageFromArray(np.zeros(np.ceil(oriPos.max(axis=0)*1.1).astype(int)[::-1]), isVector=False))
+    
     
     transformixImageFilter.SetFixedPointSetFileName(savePath+'/input0.pts')
     transformixImageFilter.SetOutputDirectory(savePath)

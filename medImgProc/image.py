@@ -18,7 +18,7 @@ History:
                                                               -in image.save, added directory create
   Author: w.x.chan@gmail.com         29OCT2018           - v1.6.5
                                                               -in imwrite2D, copy axes before adjusting to prevent consecutive use erro
-  Author: w.x.chan@gmail.com         08NOV2018           - v1.7.4
+  Author: w.x.chan@gmail.com         08NOV2018           - v1.7.5
                                                               -default dim and dimlen for array input
 Requirements:
     numpy.py
@@ -29,7 +29,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.7.4'
+_version='1.7.5'
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator

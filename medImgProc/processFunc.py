@@ -997,7 +997,7 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
         if n!=0:
             print('Registering t',n+1,' wrt t',n)
             elastixImageFilter=sitk.ElastixImageFilter()
-            elastixImageFilter.LogToFileOn()
+            elastixImageFilter.LogToFileOff()
             elastixImageFilter.LogToConsoleOff()
             fixImg=sitk.GetImageFromArray(np.copy(image.data[n]), isVector=colorVec)
             fixImg.SetOrigin(origin)
@@ -1016,7 +1016,7 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
                 sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(n)+'to'+str(n+1)+'_resultImg.mha')
         print('Registering t',n+1,' wrt t',0)
         elastixImageFilter=sitk.ElastixImageFilter()
-        elastixImageFilter.LogToFileOn()
+        elastixImageFilter.LogToFileOff()
         elastixImageFilter.LogToConsoleOff()
         fixImg=sitk.GetImageFromArray(np.copy(image.data[0]), isVector=colorVec)
         fixImg.SetOrigin(origin)
@@ -1117,7 +1117,7 @@ def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',scaleImg=1
     sitk.WriteImage(fixImg,savePath+'/t0Img.mha')
     if type(tInd)==type(None):
         elastixImageFilter=sitk.ElastixImageFilter()
-        elastixImageFilter.LogToFileOn()
+        elastixImageFilter.LogToFileOff()
         elastixImageFilter.LogToConsoleOff()
         fixImg=sitk.GetImageFromArray(np.copy(image1.data), isVector=colorVec)
         fixImg.SetOrigin(origin1)
@@ -1136,7 +1136,7 @@ def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',scaleImg=1
         for n in tInd:
             print('Registering t',n)
             elastixImageFilter=sitk.ElastixImageFilter()
-            elastixImageFilter.LogToFileOn()
+            elastixImageFilter.LogToFileOff()
             elastixImageFilter.LogToConsoleOff()
             fixImg=sitk.GetImageFromArray(np.copy(image1.data[n]), isVector=colorVec)
             fixImg.SetOrigin(origin1)
@@ -1254,6 +1254,8 @@ def transform(stlFile,timeStepNo,mapNo,startTime=1,cumulative=True,ratioFunc=tim
             Tmap.append(sitk.ReadParameterFile(TmapPath+'/transform/t0to'+str(n)+'_'+str(m)+'.txt'))
         
         transformixImageFilter=sitk.TransformixImageFilter()
+        transformixImageFilter.LogToFileOff()
+        transformixImageFilter.LogToConsoleOff()
         transformixImageFilter.SetTransformParameterMap(Tmap)
         transformixImageFilter.SetMovingImage(sitk.ReadImage(TmapPath+'/t0Img.mha'))
         transformixImageFilter.SetFixedPointSetFileName(savePath+'/input0.pts')
@@ -1277,6 +1279,8 @@ def transform(stlFile,timeStepNo,mapNo,startTime=1,cumulative=True,ratioFunc=tim
                     Tmap.append(sitk.ReadParameterFile(TmapPath+'/transform/t'+str(n-1)+'to'+str(n)+'_'+str(m)+'.txt'))
                 
                 transformixImageFilter=sitk.TransformixImageFilter()
+                transformixImageFilter.LogToFileOff()
+                transformixImageFilter.LogToConsoleOff()
                 transformixImageFilter.SetTransformParameterMap(Tmap)
                 transformixImageFilter.SetMovingImage(sitk.ReadImage(TmapPath+'/t0Img.mha'))
                 transformixImageFilter.SetFixedPointSetFileName(savePath+'/input.pts')

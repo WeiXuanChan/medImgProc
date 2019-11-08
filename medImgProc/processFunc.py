@@ -1313,6 +1313,8 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
     Tmap.append(sitk.ReadParameterFile(trfFile))
     
     transformixImageFilter=sitk.TransformixImageFilter()
+    transformixImageFilter.LogToFileOff()
+    transformixImageFilter.LogToConsoleOff()
     transformixImageFilter.SetTransformParameterMap(Tmap)
     if os.path.isfile(mhaFile):
         transformixImageFilter.SetMovingImage(sitk.ReadImage(mhaFile))

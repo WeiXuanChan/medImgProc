@@ -317,7 +317,7 @@ class image:
                 if type(dimension)!=type(None):
                     self.dim=dimension
                 else:
-                    self.dim=DEFAULT_SEGMENTATION_DIMENSION[:-len(imageFile.shape)].copy()
+                    self.dim=DEFAULT_SEGMENTATION_DIMENSION[:-len(imageFile.shape)]
                 self.dimlen=dimlen
                 for dim in self.dim:
                     if dim not in self.dimlen:

@@ -17,8 +17,9 @@ History:
   Author: w.x.chan@gmail.com         29OCT2018           - v1.6.4
                                                               -in image.save, added directory create
   Author: w.x.chan@gmail.com         29OCT2018           - v1.6.5
-                                                              -in imwrite2D, copy axes before adjusting to prevent consecutive use error
-
+                                                              -in imwrite2D, copy axes before adjusting to prevent consecutive use erro
+  Author: w.x.chan@gmail.com         29OCT2018           - v1.7.4
+                                                              -default dim and dimlen for array input
 Requirements:
     numpy.py
     matplotlib.py
@@ -28,7 +29,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.6.5'
+_version='1.7.4'
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
@@ -313,6 +314,15 @@ class image:
                 self.imread(imageFile,dimension=dimension,fileFormat=fileFormat,dimlen=dimlen,module=module)
             elif type(imageFile)==np.ndarray:
                 self.data=imageFile
+                if type(dimension)!=type(None):
+                    self.dim=dimension
+                else:
+                    self.dim=DEFAULT_SEGMENTATION_DIMENSION[:-len(imageFile.shape)].copy()
+                self.dimlen=dimlen
+                for dim in self.dim:
+                    if dim not in self.dimlen:
+                        self.dimlen[dim]=1
+                  
             if crop:
                 toSlice=[]
                 for slicing in crop:

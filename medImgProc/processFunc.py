@@ -17,6 +17,8 @@ History:
                                                               -return new position for transform_img2img
     Author: w.x.chan@gmail.com         31OCT2019           - v1.7.3
                                                               -in transform_img2img, assign moving img when not specified
+    Author: w.x.chan@gmail.com         31OCT2019           - v1.8.1
+                                                              -in alignAxes, included calFill where calFill=None, pixel outside border of translated image is filled with mean intensity 
                                                               
 
 Requirements:
@@ -29,7 +31,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.7.3'
+_version='1.8.1'
 
 import numpy as np
 import os
@@ -201,20 +203,8 @@ class gradient_descent(gradient_ascent):
 '''
 internal functions
 '''
-def calculate_correlation(imageAArray,imageBArray,mask=None):
+def calculate_correlation(imageAArray,imageBArray,mask):
     '''Calculate the correlation of two images with variance of intensity'''
-    if type(mask)!=type(None):
-        if len(mask)==len(imageAArray.shape):
-            sliceList=[]
-            for n in range(len(mask)):
-                sliceList.append(slice(mask[n][0],mask[n][1]))
-            maskArray=np.ones(imageAArray.shape)
-            maskArray[sliceList]=0
-        else:
-            maskArray=mask.copy()
-            #maskVal=np.sum((imageAArray[sliceList]-meanA)*(imageBArray[sliceList]-meanB))
-    else:
-        maskArray=np.ones(imageAArray.shape)
     imageAArray=np.copy(imageAArray)
     imageBArray=np.copy(imageBArray)
     total=maskArray.sum()
@@ -248,15 +238,15 @@ def translateArray(oldArray,translateLastaxes,includeRotate,fill):
         else:
             axis[0]-=1
     return newArray
-def correlationFunc_translate(translateLastaxes,arrayA,arrayB,includeRotate=False,fill=0,mask=None):
+def correlationFunc_translate(translateLastaxes,arrayA,arrayB,mask,includeRotate=False,calFill=0):
     '''
     mask=[(min1stdim,max1stdim),(min2nddim,max2nddim)...]
     '''
-    newArrayB=translateArray(arrayB,translateLastaxes,includeRotate,fill)
-    corr=calculate_correlation(arrayA,newArrayB,mask=mask)
+    newArrayB=translateArray(arrayB,translateLastaxes,includeRotate,calFill)
+    corr=calculate_correlation(arrayA,newArrayB,mask)
     return corr
     
-def correlation_translate(arrayA,arrayB,translateLimit,initialTranslate=None,includeRotate=False,fill=0,mask=None):
+def correlation_translate(arrayA,arrayB,translateLimit,initialTranslate=None,includeRotate=False,calFill=0,mask=None):
     '''
     find the translation of arrayB of last [number=len(translateLimit)] of dimension
     that optimises the correlation between arrayA and arrayB
@@ -268,11 +258,26 @@ def correlation_translate(arrayA,arrayB,translateLimit,initialTranslate=None,inc
             for n in range(len(translateLimit)):
                 iniTrlen+=n
         initialTranslate=np.zeros(iniTrlen)
-        
+    if type(mask)!=type(None):
+        if type(mask)!=np.ndarray:
+            sliceList=[]
+            for n in range(len(mask)):
+                sliceList.append(slice(mask[n][0],mask[n][1]))
+            mask=np.ones(arrayA.shape)
+            mask[sliceList]=0
+        elif mask.shape!=arrayA.shape:
+            maskArray=np.zeros(arrayA.shape)
+            maskArray[mask]=1
+            mask=maskArray
+            #maskVal=np.sum((imageAArray[sliceList]-meanA)*(imageBArray[sliceList]-meanB))
+    else:
+        mask=np.ones(arrayA.shape)
+    if type(calFill)==type(None):
+        calFill=(np.sum(arrayA*mask)/np.sum(mask)).astype(arrayA.dtype)
     maxTranslate=np.array(arrayB.shape[-len(translateLimit):])*translateLimit
     maxTranslate=np.concatenate((maxTranslate,10.*np.ones(len(initialTranslate)-len(maxTranslate))))
     minTranslate=-maxTranslate
-    optimizing_algorithm=gradient_ascent(correlationFunc_translate,initialTranslate,args=(arrayA,arrayB,includeRotate,fill,mask))
+    optimizing_algorithm=gradient_ascent(correlationFunc_translate,initialTranslate,args=(arrayA,arrayB,mask,includeRotate,calFill))
     optimizing_algorithm.maxPara=np.concatenate((maxTranslate,10.*np.ones(len(initialTranslate)-len(maxTranslate))))
     optimizing_algorithm.minPara=minTranslate
     optimizing_algorithm.errThreshold[len(translateLimit):]=np.ones(len(optimizing_algorithm.errThreshold)-len(translateLimit))*1.5
@@ -530,7 +535,7 @@ def collectPointsNearestToIndex(pointsList):
 '''
 external use functions
 '''
-def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice={},fixedRef=False,includeRotate=False,mask=None):
+def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice={},fixedRef=False,includeRotate=False,calFill=0,mask=None):
     '''refAxis={'axis':index}'''
     image=image.clone()
     returnDim=image.dim[:]
@@ -575,7 +580,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice={},fixedRef=False
             ref=n
             indSlice=slice(0,n)
             translateIndex=None
-        translateIndex=correlation_translate(extractArray[ref],extractArray[n-1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,mask=mask)
+        translateIndex=correlation_translate(extractArray[ref],extractArray[n-1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,fill=calFill,mask=mask)
         if (np.abs(translateIndex)>=0.5).any():
             print('updating... with translation',translateIndex)
             extractArray[indSlice]=translateArray(extractArray[indSlice],translateIndex,includeRotate,0)
@@ -590,7 +595,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice={},fixedRef=False
             ref=n
             indSlice=slice(n+1,None)
             translateIndex=None
-        translateIndex=correlation_translate(extractArray[ref],extractArray[n+1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,mask=mask)
+        translateIndex=correlation_translate(extractArray[ref],extractArray[n+1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,fill=calFill,mask=mask)
         if (np.abs(translateIndex)>=0.5).any():
             print('updating... with translation',translateIndex)
             extractArray[indSlice]=translateArray(extractArray[indSlice],translateIndex,includeRotate,0)

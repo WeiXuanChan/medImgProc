@@ -17,11 +17,13 @@ History:
   Author: w.x.chan@gmail.com         29OCT2018           - v1.6.4
                                                               -in image.save, added directory create
   Author: w.x.chan@gmail.com         29OCT2018           - v1.6.5
-                                                              -in imwrite2D, copy axes before adjusting to prevent consecutive use erro
+                                                              -in imwrite2D, copy axes before adjusting to prevent consecutive use error
   Author: w.x.chan@gmail.com         08NOV2018           - v1.7.5
                                                               -default dim and dimlen for array input
   Author: w.x.chan@gmail.com         29OCT2018           - v1.7.6
-                                                              -in imwrite2D, revised dimRange default to None to prevent consecutive use erro
+                                                              -in imwrite2D, revised dimRange default to None to prevent consecutive use error
+  Author: w.x.chan@gmail.com         11NOV2019           - v1.8.0
+                                                            -added scipy interp1d to stretchDim
   
 Requirements:
     numpy.py
@@ -32,10 +34,11 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.7.6'
+_version='1.8.0'
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
+from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 import os
 import matplotlib
@@ -152,8 +155,13 @@ def stretchFirstDimension(oldArray,stretchSize,scheme):
     '''
     oldShape=oldArray.shape
     newArray=np.zeros((stretchSize,*oldShape[1:]))
-    for n in range(stretchSize):
-        newArray[n]=scheme(float(n*(oldShape[0]-1))/(stretchSize-1),oldArray)
+    if type(scheme)==str:
+        x=np.arange(oldShape[0])
+        f = interp1d(np.arange(oldShape[0]), oldArray,kind=scheme,axis=0)
+        newArray=f(np.linspace(0, oldShape[0]-1, num=stretchSize, endpoint=True))
+    else:
+        for n in range(stretchSize):
+            newArray[n]=scheme(float(n*(oldShape[0]-1))/(stretchSize-1),oldArray)
     return newArray
 def stretchImg(imageClass,stretchDim,scheme):
     '''

@@ -17,7 +17,7 @@ History:
                                                               -return new position for transform_img2img
     Author: w.x.chan@gmail.com         31OCT2019           - v1.7.3
                                                               -in transform_img2img, assign moving img when not specified
-    Author: w.x.chan@gmail.com         31OCT2019           - v1.8.2
+    Author: w.x.chan@gmail.com         31OCT2019           - v1.8.3
                                                               -in alignAxes, included calFill where calFill=None, pixel outside border of translated image is filled with mean intensity 
                                                               -in alignAxes, for Eulerian scheme and includeRotate = False, accumulate translation to prevent data loss 
                                                               
@@ -32,7 +32,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.8.2'
+_version='1.8.3'
 
 import numpy as np
 import os
@@ -575,7 +575,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
     translateIndex=None
     saveTranslateIndex=[]
     for n in range(relativeIndexref,0,-1):
-        print('running slice',n)
+        print('running slice',n-1)
         if fixedRef:
             ref=relativeIndexref
             indSlice=slice(n-1,n)
@@ -592,11 +592,13 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
             saveTranslateIndex.append([n-1,*translateIndex])
             if fixedRef or includeRotate:
                 extractArray[indSlice]=translateArray(extractArray[indSlice],translateIndex,includeRotate,0)
-            else:
-                extractArray[indSlice]=translateArray(extractArray[indSlice],np.array(saveTranslateIndex)[:,1:].sum(axis=0),includeRotate,0)
+    if fixedRef and includeRotate:
+        for n in range(len(saveTranslateIndex)):
+            extractArray[saveTranslateIndex[n][0]]=translateArray(extractArray[saveTranslateIndex[n][0]],np.array(saveTranslateIndex)[:n,1:].sum(axis=0),includeRotate,0)
+    nextToTranslate=len(saveTranslateIndex)
     translateIndex=None
     for n in range(relativeIndexref,len(extractArray)-1):
-        print('running slice',n)
+        print('running slice',n+1)
         if fixedRef:
             ref=relativeIndexref
             indSlice=slice(n+1,n+2)
@@ -613,8 +615,9 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
             saveTranslateIndex.append([n+1,*translateIndex])
             if fixedRef or includeRotate:
                 extractArray[indSlice]=translateArray(extractArray[indSlice],translateIndex,includeRotate,0)
-            else:
-                extractArray[indSlice]=translateArray(extractArray[indSlice],np.array(saveTranslateIndex)[:,1:].sum(axis=0),includeRotate,0)
+    if fixedRef and includeRotate:
+        for n in range(nextToTranslate,len(saveTranslateIndex)):
+            extractArray[saveTranslateIndex[n][0]]=translateArray(extractArray[saveTranslateIndex[n][0]],np.array(saveTranslateIndex)[nextToTranslate:n,1:].sum(axis=0),includeRotate,0)
     
     image.data[dimensionSlice]=np.copy(extractArray)
     image.rearrangeDim(returnDim,True)

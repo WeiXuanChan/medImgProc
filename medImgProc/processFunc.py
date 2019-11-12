@@ -17,7 +17,7 @@ History:
                                                               -return new position for transform_img2img
     Author: w.x.chan@gmail.com         31OCT2019           - v1.7.3
                                                               -in transform_img2img, assign moving img when not specified
-    Author: w.x.chan@gmail.com         31OCT2019           - v1.8.1
+    Author: w.x.chan@gmail.com         31OCT2019           - v1.8.2
                                                               -in alignAxes, included calFill where calFill=None, pixel outside border of translated image is filled with mean intensity 
                                                               -in alignAxes, for Eulerian scheme and includeRotate = False, accumulate translation to prevent data loss 
                                                               
@@ -32,7 +32,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.8.1'
+_version='1.8.2'
 
 import numpy as np
 import os
@@ -204,7 +204,7 @@ class gradient_descent(gradient_ascent):
 '''
 internal functions
 '''
-def calculate_correlation(imageAArray,imageBArray,mask):
+def calculate_correlation(imageAArray,imageBArray,maskArray):
     '''Calculate the correlation of two images with variance of intensity'''
     imageAArray=np.copy(imageAArray)
     imageBArray=np.copy(imageBArray)
@@ -536,8 +536,10 @@ def collectPointsNearestToIndex(pointsList):
 '''
 external use functions
 '''
-def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice={},fixedRef=False,includeRotate=False,calFill=0,mask=None):
+def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=False,includeRotate=False,calFill=0,mask=None):
     '''refAxis={'axis':index}'''
+    if type(dimSlice)==type(None):
+        dimSlice={}
     image=image.clone()
     returnDim=image.dim[:]
     axisref=list(refAxis.keys())[0]
@@ -560,7 +562,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice={},fixedRef=False
     image.rearrangeDim(dimensionkey,True)
     image.rearrangeDim(axesToTranslate,False)
 
-    extractArray=np.copy(image.data[dimensionSlice])
+    extractArray=np.copy(image.data[tuple(dimensionSlice)])
     if axisSlice.start is None:
         axisSliceStart=0
     else:
@@ -584,7 +586,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice={},fixedRef=False
             else:
                 indSlice=slice(n-1,n)
             translateIndex=None
-        translateIndex=correlation_translate(extractArray[ref],extractArray[n-1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,fill=calFill,mask=mask)
+        translateIndex=correlation_translate(extractArray[ref],extractArray[n-1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
         if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
             print('updating... with translation',translateIndex)
             saveTranslateIndex.append([n-1,*translateIndex])
@@ -605,7 +607,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice={},fixedRef=False
             else:
                 indSlice=slice(n+1,n+2)
             translateIndex=None
-        translateIndex=correlation_translate(extractArray[ref],extractArray[n+1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,fill=calFill,mask=mask)
+        translateIndex=correlation_translate(extractArray[ref],extractArray[n+1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
         if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
             print('updating... with translation',translateIndex)
             saveTranslateIndex.append([n+1,*translateIndex])

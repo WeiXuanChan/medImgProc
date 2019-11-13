@@ -17,9 +17,11 @@ History:
                                                               -return new position for transform_img2img
     Author: w.x.chan@gmail.com         31OCT2019           - v1.7.3
                                                               -in transform_img2img, assign moving img when not specified
-    Author: w.x.chan@gmail.com         31OCT2019           - v1.8.3
+    Author: w.x.chan@gmail.com         10NOV2019           - v1.8.3
                                                               -in alignAxes, included calFill where calFill=None, pixel outside border of translated image is filled with mean intensity 
-                                                              -in alignAxes, for Eulerian scheme and includeRotate = False, accumulate translation to prevent data loss 
+                                                              -in alignAxes, for Eulerian scheme and includeRotate = False, accumulate translation to prevent data loss
+    Author: w.x.chan@gmail.com         13NOV2019           - v1.8.4
+                                                              -in alignAxes, rearrange mask
                                                               
 
 Requirements:
@@ -32,7 +34,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.8.3'
+_version='1.8.4'
 
 import numpy as np
 import os
@@ -559,9 +561,16 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
     for dimension in dimSlice:
         dimensionkey.append(dimension)
         dimensionSlice.append(dimSlice[dimension])
-    image.rearrangeDim(dimensionkey,True)
-    image.rearrangeDim(axesToTranslate,False)
-
+    rearrange1=image.rearrangeDim(dimensionkey,True)
+    rearrange2=image.rearrangeDim(axesToTranslate,False)
+    if type(mask)!=type(None):
+        if type(mask)==list:
+            mask=np.array(mask)[np.array(rearrange1)]
+            mask=list(mask[np.array(rearrange2)])
+        elif type(mask)==np.ndarray:
+            mask=np.transpose(mask,rearrange1)
+            mask=np.transpose(mask,rearrange2)
+      
     extractArray=np.copy(image.data[tuple(dimensionSlice)])
     if axisSlice.start is None:
         axisSliceStart=0

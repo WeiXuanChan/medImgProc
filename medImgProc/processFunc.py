@@ -22,6 +22,8 @@ History:
                                                               -in alignAxes, for Eulerian scheme and includeRotate = False, accumulate translation to prevent data loss
     Author: w.x.chan@gmail.com         13NOV2019           - v1.8.5
                                                               -in alignAxes, rearrange mask
+    Author: w.x.chan@gmail.com         13NOV2019           - v1.9.0
+                                                              -in TmapRegister, added mode to do cyclic
                                                               
 
 Requirements:
@@ -34,7 +36,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.8.5'
+_version='1.9.0'
 
 import numpy as np
 import os
@@ -959,7 +961,7 @@ def vectorRegister(image,savePath='',stlRefDim={},baseRefFraction=1.,baseRefFunc
         if baseRefFraction!=1.:
             np.savetxt(pointfile+'Output/outputpoints.pts',newPixelVertice,header='point\n'+str(len(pixelVertice)),comments='')
 
-def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=False,startTime=0,scaleImg=1.,writeImg=False,twoD=False,nres =3,smoothing=True):
+def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=False,startTime=0,scaleImg=1.,writeImg=False,twoD=False,nres =3,smoothing=True,cyclic=False):
     image=image.clone()
     if scaleImg!=1:
         for axis in ['x','y','z']:
@@ -1029,31 +1031,11 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
     timeList=np.array(range(len(image.data)))*image.dimlen['t']
     np.savetxt(savePath+'/transform/timeList',timeList)
     for n in range(startTime,image.data.shape[0]-1):
-        if n!=0:
-            print('Registering t',n+1,' wrt t',n)
-            elastixImageFilter=sitk.ElastixImageFilter()
-            elastixImageFilter.LogToFileOff()
-            elastixImageFilter.LogToConsoleOff()
-            fixImg=sitk.GetImageFromArray(np.copy(image.data[n]), isVector=colorVec)
-            fixImg.SetOrigin(origin)
-            fixImg.SetSpacing(spacing)
-            movImg=sitk.GetImageFromArray(np.copy(image.data[n+1]), isVector=colorVec)
-            movImg.SetOrigin(origin)
-            movImg.SetSpacing(spacing)
-            elastixImageFilter.SetFixedImage(fixImg)
-            elastixImageFilter.SetMovingImage(movImg)
-            elastixImageFilter.SetParameterMap(parameterMapVector)
-            elastixImageFilter.Execute()
-            Tmap=elastixImageFilter.GetTransformParameterMap()
-            for m in range(len(Tmap)):
-                sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t'+str(n)+'to'+str(n+1)+'_'+str(m)+'.txt')
-            if writeImg:
-                sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(n)+'to'+str(n+1)+'_resultImg.mha')
-        print('Registering t',n+1,' wrt t',0)
+        print('Registering t',n+1,' wrt t',n)
         elastixImageFilter=sitk.ElastixImageFilter()
         elastixImageFilter.LogToFileOff()
         elastixImageFilter.LogToConsoleOff()
-        fixImg=sitk.GetImageFromArray(np.copy(image.data[0]), isVector=colorVec)
+        fixImg=sitk.GetImageFromArray(np.copy(image.data[n]), isVector=colorVec)
         fixImg.SetOrigin(origin)
         fixImg.SetSpacing(spacing)
         movImg=sitk.GetImageFromArray(np.copy(image.data[n+1]), isVector=colorVec)
@@ -1065,9 +1047,76 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
         elastixImageFilter.Execute()
         Tmap=elastixImageFilter.GetTransformParameterMap()
         for m in range(len(Tmap)):
-            sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t0to'+str(n+1)+'_'+str(m)+'.txt')
+            sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t'+str(n)+'to'+str(n+1)+'_'+str(m)+'.txt')
         if writeImg:
-            sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t0to'+str(n+1)+'_resultImg.mha')
+            sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(n)+'to'+str(n+1)+'_resultImg.mha')
+        if cyclic:
+            print('Registering t',n,' wrt t',n+1)
+            elastixImageFilter=sitk.ElastixImageFilter()
+            elastixImageFilter.LogToFileOff()
+            elastixImageFilter.LogToConsoleOff()
+            elastixImageFilter.SetFixedImage(movImg)
+            elastixImageFilter.SetMovingImage(fixImg)
+            elastixImageFilter.SetParameterMap(parameterMapVector)
+            elastixImageFilter.Execute()
+            Tmap=elastixImageFilter.GetTransformParameterMap()
+            for m in range(len(Tmap)):
+                sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t'+str(n+1)+'to'+str(n)+'_'+str(m)+'.txt')
+            if writeImg:
+                sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(n+1)+'to'+str(n)+'_resultImg.mha')
+        elif n!=0:
+            print('Registering t',n+1,' wrt t',0)
+            elastixImageFilter=sitk.ElastixImageFilter()
+            elastixImageFilter.LogToFileOff()
+            elastixImageFilter.LogToConsoleOff()
+            fixImg=sitk.GetImageFromArray(np.copy(image.data[0]), isVector=colorVec)
+            fixImg.SetOrigin(origin)
+            fixImg.SetSpacing(spacing)
+            movImg=sitk.GetImageFromArray(np.copy(image.data[n+1]), isVector=colorVec)
+            movImg.SetOrigin(origin)
+            movImg.SetSpacing(spacing)
+            elastixImageFilter.SetFixedImage(fixImg)
+            elastixImageFilter.SetMovingImage(movImg)
+            elastixImageFilter.SetParameterMap(parameterMapVector)
+            elastixImageFilter.Execute()
+            Tmap=elastixImageFilter.GetTransformParameterMap()
+            for m in range(len(Tmap)):
+                sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t0to'+str(n+1)+'_'+str(m)+'.txt')
+            if writeImg:
+                sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t0to'+str(n+1)+'_resultImg.mha')
+    if cyclic:
+        print('Registering t',0,' wrt t',image.data.shape[0]-1)
+        elastixImageFilter=sitk.ElastixImageFilter()
+        elastixImageFilter.LogToFileOff()
+        elastixImageFilter.LogToConsoleOff()
+        fixImg=sitk.GetImageFromArray(np.copy(image.data[-1]), isVector=colorVec)
+        fixImg.SetOrigin(origin)
+        fixImg.SetSpacing(spacing)
+        movImg=sitk.GetImageFromArray(np.copy(image.data[0]), isVector=colorVec)
+        movImg.SetOrigin(origin)
+        movImg.SetSpacing(spacing)
+        elastixImageFilter.SetFixedImage(fixImg)
+        elastixImageFilter.SetMovingImage(movImg)
+        elastixImageFilter.SetParameterMap(parameterMapVector)
+        elastixImageFilter.Execute()
+        Tmap=elastixImageFilter.GetTransformParameterMap()
+        for m in range(len(Tmap)):
+            sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t'+str(image.data.shape[0]-1)+'to'+str(0)+'_'+str(m)+'.txt')
+        if writeImg:
+            sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(image.data.shape[0]-1)+'to'+str(0)+'_resultImg.mha')
+        print('Registering t',image.data.shape[0]-1,' wrt t',0)
+        elastixImageFilter=sitk.ElastixImageFilter()
+        elastixImageFilter.LogToFileOff()
+        elastixImageFilter.LogToConsoleOff()
+        elastixImageFilter.SetFixedImage(movImg)
+        elastixImageFilter.SetMovingImage(fixImg)
+        elastixImageFilter.SetParameterMap(parameterMapVector)
+        elastixImageFilter.Execute()
+        Tmap=elastixImageFilter.GetTransformParameterMap()
+        for m in range(len(Tmap)):
+            sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t'+str(0)+'to'+str(image.data.shape[0]-1)+'_'+str(m)+'.txt')
+        if writeImg:
+            sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(0)+'to'+str(image.data.shape[0]-1)+'_resultImg.mha')
 def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',scaleImg=1.,tInd=None,origin1=(0.,0.,0.),origin2=(0.,0.,0.),EulerTransformCorrection=False,rms=False,bgrid=2.,bweight=1.,twoD=False,nres =3,smoothing=True):
     image1=image1.clone()
     image2=image2.clone()

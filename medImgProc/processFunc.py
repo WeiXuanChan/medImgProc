@@ -20,7 +20,7 @@ History:
     Author: w.x.chan@gmail.com         10NOV2019           - v1.8.3
                                                               -in alignAxes, included calFill where calFill=None, pixel outside border of translated image is filled with mean intensity 
                                                               -in alignAxes, for Eulerian scheme and includeRotate = False, accumulate translation to prevent data loss
-    Author: w.x.chan@gmail.com         13NOV2019           - v1.8.4
+    Author: w.x.chan@gmail.com         13NOV2019           - v1.8.5
                                                               -in alignAxes, rearrange mask
                                                               
 
@@ -34,7 +34,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.8.4'
+_version='1.8.5'
 
 import numpy as np
 import os
@@ -546,6 +546,8 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
     returnDim=image.dim[:]
     axisref=list(refAxis.keys())[0]
     indexref=refAxis[axisref]
+    rearrangeMask=np.arange(len(image.dim)-1)
+    rearrangeMask=np.insert(rearrangeMask,image.dim.index(axisref),-1)
     '''sanitize dimSlice to remove duplicate in axesToTranslate and refAxis'''
     axisSlice=slice(image.data.shape[image.dim.index(axisref)])
     if axisref in dimSlice:
@@ -563,13 +565,14 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
         dimensionSlice.append(dimSlice[dimension])
     rearrange1=image.rearrangeDim(dimensionkey,True)
     rearrange2=image.rearrangeDim(axesToTranslate,False)
+    rearrangeMask=rearrangeMask[rearrange1]
+    rearrangeMask=rearrangeMask[rearrange2]
+    rearrangeMask=rearrangeMask[rearrangeMask>=0]
     if type(mask)!=type(None):
         if type(mask)==list:
-            mask=np.array(mask)[np.array(rearrange1)]
-            mask=list(mask[np.array(rearrange2)])
+            mask=list(np.array(mask)[rearrangeMask])
         elif type(mask)==np.ndarray:
-            mask=np.transpose(mask,rearrange1)
-            mask=np.transpose(mask,rearrange2)
+            mask=np.transpose(mask,rearrangeMask)
       
     extractArray=np.copy(image.data[tuple(dimensionSlice)])
     if axisSlice.start is None:

@@ -627,11 +627,11 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
                 indSlice=slice(n-1,n)
                 if initTranslate and len(saveTranslateIndex)>0:
                     translateIndex=-np.array(saveTranslateIndex)[:,1:].sum(axis=0)
-        if nres>1 and translateIndex:
-            translateIndex[:trlen]/=nres
         for m in range(nres,0,-1):
             fixArray=reduceResolution(extractArray[ref],trlen,m)
             movArray=reduceResolution(extractArray[n-1],trlen,m)
+            if m>1 and translateIndex:
+                translateIndex[:trlen]/=m
             translateIndex=correlation_translate(fixArray,movArray,np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
             if m>1:
                 translateIndex[:trlen]*=m
@@ -661,11 +661,11 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
                 indSlice=slice(n+1,n+2)
                 if initTranslate and len(saveTranslateIndex)>nextToTranslate:
                     translateIndex=-np.array(saveTranslateIndex)[nextToTranslate:,1:].sum(axis=0)
-        if nres>1 and translateIndex:
-            translateIndex[:trlen]/=nres
         for m in range(nres,0,-1):
             fixArray=reduceResolution(extractArray[ref],trlen,m)
             movArray=reduceResolution(extractArray[n+1],trlen,m)
+            if m>1 and translateIndex:
+                translateIndex[:trlen]/=m
             translateIndex=correlation_translate(fixArray,movArray,np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
             if m>1:
                 translateIndex[:trlen]*=m

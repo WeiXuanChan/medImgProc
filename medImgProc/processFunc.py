@@ -28,6 +28,9 @@ History:
                                                               -in alignAxes, added option to initTranslate
     Author: w.x.chan@gmail.com         18NOV2019           - v2.0.0
                                                               -in alignAxes, added multilevel nres
+    Author: w.x.chan@gmail.com         18NOV2019           - v2.1.1
+                                                              -in alignAxes, debug multilevel nres which gave different shape
+                                                              -in registrator, added twoD ndarray input
                                                               
 
 Requirements:
@@ -40,7 +43,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.0.0'
+_version='2.1.1'
 
 import numpy as np
 import os
@@ -549,14 +552,14 @@ def reduceResolution(array,lastaxes,nres):
             sliceList=[]
             for n in range(len(array.shape)-axisN-1):
                 sliceList.append(slice(None))
-            sliceList.append(slice(0,None,nres))
+            sliceList.append(slice(0,array.shape[-1-axisN]-(array.shape[-1-axisN]%nres),nres))
             copyArray=resultArray.copy()
             resultArray=copyArray[tuple(sliceList)]/nres
             for m in range(1,nres):
                 sliceList=[]
                 for n in range(len(array.shape)-axisN-1):
                     sliceList.append(slice(None))
-                sliceList.append(slice(m,None,nres))
+                sliceList.append(slice(m,array.shape[-1-axisN]-(array.shape[-1-axisN]%nres),nres))
                 resultArray+=copyArray[tuple(sliceList)]/nres
     return resultArray
 '''

@@ -96,6 +96,10 @@ History:
                                                             -processFunc v1.9.1
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
+  Author: w.x.chan@gmail.com         13NOV2018           - v2.0.0
+                                                            -processFunc v2.0.0
+                                                            -Image v1.8.0
+                                                            -GUI v1.5.2
 
 Requirements:
     numpy.py
@@ -106,7 +110,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.9.1'
+_version='2.0.0'
 print('medImgProc version',_version)
 
 

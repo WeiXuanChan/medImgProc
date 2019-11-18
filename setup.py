@@ -2,13 +2,13 @@ from setuptools import setup
 setup(
   name = 'medImgProc',         # How you named your package folder (MyLib)
   packages = ['medImgProc'],   # Chose the same as "name"
-  version = '1.9.1',      # Start with a small number and increase it with every change you make
+  version = '2.0.0',      # Start with a small number and increase it with every change you make
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'Medical Image Processing module for viewing and editing.',   # Give a short description about your library
   author = 'Wei Xuan Chan',                   # Type in your name
   author_email = 'w.x.chan1986@gmail.com',      # Type in your E-Mail
   url = 'https://github.com/WeiXuanChan/medImgProc',   # Provide either the link to your github or to your website
-  download_url = 'https://github.com/WeiXuanChan/medImgProc/archive/v1.9.1.tar.gz',    # I explain this later on
+  download_url = 'https://github.com/WeiXuanChan/medImgProc/archive/v2.0.0.tar.gz',    # I explain this later on
   keywords = ['medical', 'image'],   # Keywords that define your package best
   install_requires=['numpy','matplotlib','imageio','scipy','trimesh'],
   extras_require = {

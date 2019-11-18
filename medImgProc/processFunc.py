@@ -1783,13 +1783,22 @@ class registrator:
         
         
     def register(self,image1,image2,initialTransf='',savePath='',regType='rigid',fileName='img2img',metric='rms',nres=6,smoothing=True,outputImage=True):
-        
-        image1=image1.clone()
-        image2=image2.clone()
-        image1.rearrangeDim(['z','y','x'])
-        image2.rearrangeDim(['z','y','x'])
-        origin1=(0.,0.,0.)
-        origin2=(0.,0.,0.)
+        if type(image1)==np.ndarray:
+            twoD=len(image1.shape)
+            origin1=tuple(np.zeros(twoD))
+            spacing1=tuple(np.ones(twoD))
+            origin2=tuple(np.zeros(twoD))
+            spacing2=tuple(np.ones(twoD))
+        else:
+            twoD=3
+            image1=image1.clone()
+            image2=image2.clone()
+            image1.rearrangeDim(['z','y','x'])
+            image2.rearrangeDim(['z','y','x'])
+            origin1=(0.,0.,0.)
+            origin2=(0.,0.,0.)
+            spacing1=(image1.dimlen['x'],image1.dimlen['y'],image1.dimlen['z'])
+            spacing2=(image2.dimlen['x'],image2.dimlen['y'],image2.dimlen['z'])
         
         if regType == 'affine':
             savePath = savePath + '_affine' 
@@ -1811,8 +1820,6 @@ class registrator:
            
         os.makedirs(savePath, exist_ok=True)
         os.makedirs(savePath+'/transform', exist_ok=True)
-        spacing1=(image1.dimlen['x'],image1.dimlen['y'],image1.dimlen['z'])
-        spacing2=(image2.dimlen['x'],image2.dimlen['y'],image2.dimlen['z'])
         
         parameterMapVector = sitk.VectorOfParameterMap()
         EulerTransform=sitk.GetDefaultParameterMap("rigid")
@@ -1841,39 +1848,14 @@ class registrator:
         
         EulerTransform['MaximumNumberOfIterations'] = ['1024']
         affine['MaximumNumberOfIterations'] = ['1024']
-        if nres == 4:
-            EulerTransform["NumberOfResolutions"] = ("4",)
-            affine["NumberOfResolutions"] = ("4",)
-            if smoothing:
-                EulerTransform["FixedImagePyramidSchedule"] = ('8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                EulerTransform["MovingImagePyramidSchedule"] = ('8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                affine["FixedImagePyramidSchedule"] = ('8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                affine["MovingImagePyramidSchedule"] = ('8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-        elif nres == 5:
-            EulerTransform["NumberOfResolutions"] = ("5",)
-            affine["NumberOfResolutions"] = ("5",)
-            if smoothing:
-                EulerTransform["FixedImagePyramidSchedule"] = ('16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                EulerTransform["MovingImagePyramidSchedule"] = ('16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                affine["FixedImagePyramidSchedule"] = ('16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                affine["MovingImagePyramidSchedule"] = ('16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-        elif nres == 6:
-            EulerTransform["NumberOfResolutions"] = ("6",)
-            affine["NumberOfResolutions"] = ("6",)
-            if smoothing:
-                EulerTransform["FixedImagePyramidSchedule"] = ('32' '32' '32' '16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                EulerTransform["MovingImagePyramidSchedule"] = ('32' '32' '32' '16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                affine["FixedImagePyramidSchedule"] = ('32' '32' '32' '16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                affine["MovingImagePyramidSchedule"] = ('32' '32' '32' '16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-        elif nres == 7:
-            EulerTransform["NumberOfResolutions"] = ("7",)
-            affine["NumberOfResolutions"] = ("7",)
-            if smoothing:
-                EulerTransform["FixedImagePyramidSchedule"] = ('64' '64' '64' '32' '32' '32' '16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                EulerTransform["MovingImagePyramidSchedule"] = ('64' '64' '64' '32' '32' '32' '16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                affine["FixedImagePyramidSchedule"] = ('64' '64' '64' '32' '32' '32''16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-                affine["MovingImagePyramidSchedule"] = ('64' '64' '64' '32' '32' '32''16' '16' '16' '8' '8' '8' '4' '4' '4' '2' '2' '2' '1' '1' '1')
-    
+
+        EulerTransform["NumberOfResolutions"] = (str(nres),)
+        affine["NumberOfResolutions"] = (str(nres),)
+        if smoothing:
+            EulerTransform["FixedImagePyramidSchedule"] = tuple((2**np.repeat(np.arange(nres-1,-1,-1),twoD)).astype(str))
+            EulerTransform["MovingImagePyramidSchedule"] = tuple((2**np.repeat(np.arange(nres-1,-1,-1),twoD)).astype(str))
+            affine["FixedImagePyramidSchedule"] = tuple((2**np.repeat(np.arange(nres-1,-1,-1),twoD)).astype(str))
+            affine["MovingImagePyramidSchedule"] = tuple((2**np.repeat(np.arange(nres-1,-1,-1),twoD)).astype(str))
         parameterMapVector.append(EulerTransform)
         if regType == 'affine':
             parameterMapVector.append(affine)
@@ -1888,16 +1870,20 @@ class registrator:
         elastixImageFilter=sitk.ElastixImageFilter()
         elastixImageFilter.LogToFileOff()
         elastixImageFilter.LogToConsoleOff()
-        
-        x = np.copy(image1.data)
+        if type(image1)==np.ndarray:
+            x=np.copy(image1)
+        else:
+            x = np.copy(image1.data)
         fixImg=sitk.GetImageFromArray(x.astype(np.uint8), isVector=colorVec)
         
         fixImg.SetOrigin(origin1)
         fixImg.SetSpacing(spacing1)
         if outputImage:
             sitk.WriteImage(fixImg,savePath+'/'+fileName+'_fixImg.mha')
-        
-        movImg=sitk.GetImageFromArray(np.copy(image2.data.astype(np.uint8)), isVector=colorVec)
+        if type(image2)==np.ndarray:
+            movImg=sitk.GetImageFromArray(np.copy(image2.astype(np.uint8)), isVector=colorVec)
+        else:
+            movImg=sitk.GetImageFromArray(np.copy(image2.data.astype(np.uint8)), isVector=colorVec)
         movImg.SetOrigin(origin2)
         movImg.SetSpacing(spacing2)
         

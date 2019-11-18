@@ -24,6 +24,8 @@ History:
                                                               -in alignAxes, rearrange mask
     Author: w.x.chan@gmail.com         13NOV2019           - v1.9.0
                                                               -in TmapRegister, added mode to do cyclic
+    Author: w.x.chan@gmail.com         18NOV2019           - v1.9.1
+                                                              -in alignAxes, added option to initTranslate
                                                               
 
 Requirements:
@@ -36,7 +38,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.9.0'
+_version='1.9.1'
 
 import numpy as np
 import os
@@ -540,7 +542,7 @@ def collectPointsNearestToIndex(pointsList):
 '''
 external use functions
 '''
-def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=False,includeRotate=False,calFill=0,mask=None):
+def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=False,initTranslate=True,includeRotate=False,calFill=0,mask=None):
     '''refAxis={'axis':index}'''
     if type(dimSlice)==type(None):
         dimSlice={}
@@ -593,20 +595,24 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
         if fixedRef:
             ref=relativeIndexref
             indSlice=slice(n-1,n)
+            if not(initTranslate):
+                translateIndex=None
         else:
             ref=n
+            translateIndex=None
             if includeRotate:
                 indSlice=slice(0,n)
             else:
                 indSlice=slice(n-1,n)
-            translateIndex=None
+                if initTranslate and len(saveTranslateIndex)>0:
+                    translateIndex=-np.array(saveTranslateIndex)[:,1:].sum(axis=0)
         translateIndex=correlation_translate(extractArray[ref],extractArray[n-1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
         if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
             print('updating... with translation',translateIndex)
             saveTranslateIndex.append([n-1,*translateIndex])
             if fixedRef or includeRotate:
                 extractArray[indSlice]=translateArray(extractArray[indSlice],translateIndex,includeRotate,0)
-    if fixedRef and includeRotate:
+    if not(fixedRef) and not(includeRotate):
         for n in range(len(saveTranslateIndex)):
             extractArray[saveTranslateIndex[n][0]]=translateArray(extractArray[saveTranslateIndex[n][0]],np.array(saveTranslateIndex)[:n,1:].sum(axis=0),includeRotate,0)
     nextToTranslate=len(saveTranslateIndex)
@@ -616,20 +622,24 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
         if fixedRef:
             ref=relativeIndexref
             indSlice=slice(n+1,n+2)
+            if not(initTranslate):
+                translateIndex=None
         else:
             ref=n
+            translateIndex=None
             if includeRotate:
                 indSlice=slice(n+1,None)
             else:
                 indSlice=slice(n+1,n+2)
-            translateIndex=None
+                if initTranslate and len(saveTranslateIndex)>nextToTranslate:
+                    translateIndex=-np.array(saveTranslateIndex)[nextToTranslate:,1:].sum(axis=0)
         translateIndex=correlation_translate(extractArray[ref],extractArray[n+1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
         if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
             print('updating... with translation',translateIndex)
             saveTranslateIndex.append([n+1,*translateIndex])
             if fixedRef or includeRotate:
                 extractArray[indSlice]=translateArray(extractArray[indSlice],translateIndex,includeRotate,0)
-    if fixedRef and includeRotate:
+    if not(fixedRef) and not(includeRotate):
         for n in range(nextToTranslate,len(saveTranslateIndex)):
             extractArray[saveTranslateIndex[n][0]]=translateArray(extractArray[saveTranslateIndex[n][0]],np.array(saveTranslateIndex)[nextToTranslate:n,1:].sum(axis=0),includeRotate,0)
     

@@ -26,6 +26,8 @@ History:
                                                               -in TmapRegister, added mode to do cyclic
     Author: w.x.chan@gmail.com         18NOV2019           - v1.9.1
                                                               -in alignAxes, added option to initTranslate
+    Author: w.x.chan@gmail.com         18NOV2019           - v2.0.0
+                                                              -in alignAxes, added multilevel nres
                                                               
 
 Requirements:
@@ -38,7 +40,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='1.9.1'
+_version='2.0.0'
 
 import numpy as np
 import os
@@ -538,12 +540,31 @@ def collectPointsNearestToIndex(pointsList):
     newPoints,newCoordRef=pointsToPlanes(points,coordRef)
     newPoints=fillplanesWithPoints(newPoints)
     return newPoints
-
+def reduceResolution(array,lastaxes,nres):
+    if nres<2:
+        return array.copy()
+    else:
+        resultArray=array.copy()
+        for axisN in range(lastaxes):
+            sliceList=[]
+            for n in range(len(array.shape)-axisN-1):
+                sliceList.append(slice(None))
+            sliceList.append(slice(0,None,nres))
+            copyArray=resultArray.copy()
+            resultArray=copyArray[tuple(sliceList)]/nres
+            for m in range(1,nres):
+                sliceList=[]
+                for n in range(len(array.shape)-axisN-1):
+                    sliceList.append(slice(None))
+                sliceList.append(slice(m,None,nres))
+                resultArray+=copyArray[tuple(sliceList)]/nres
+    return resultArray
 '''
 external use functions
 '''
-def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=False,initTranslate=True,includeRotate=False,calFill=0,mask=None):
+def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=False,initTranslate=True,includeRotate=False,calFill=0,mask=None,nres=1):
     '''refAxis={'axis':index}'''
+    trlen=len(axesToTranslate)
     if type(dimSlice)==type(None):
         dimSlice={}
     image=image.clone()
@@ -606,7 +627,14 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
                 indSlice=slice(n-1,n)
                 if initTranslate and len(saveTranslateIndex)>0:
                     translateIndex=-np.array(saveTranslateIndex)[:,1:].sum(axis=0)
-        translateIndex=correlation_translate(extractArray[ref],extractArray[n-1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
+        if nres>1 and translateIndex:
+            translateIndex[:trlen]/=nres
+        for m in range(nres,0,-1):
+            fixArray=reduceResolution(extractArray[ref],trlen,m)
+            movArray=reduceResolution(extractArray[n-1],trlen,m)
+            translateIndex=correlation_translate(fixArray,movArray,np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
+            if m>1:
+                translateIndex[:trlen]*=m
         if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
             print('updating... with translation',translateIndex)
             saveTranslateIndex.append([n-1,*translateIndex])
@@ -633,7 +661,14 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
                 indSlice=slice(n+1,n+2)
                 if initTranslate and len(saveTranslateIndex)>nextToTranslate:
                     translateIndex=-np.array(saveTranslateIndex)[nextToTranslate:,1:].sum(axis=0)
-        translateIndex=correlation_translate(extractArray[ref],extractArray[n+1],np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
+        if nres>1 and translateIndex:
+            translateIndex[:trlen]/=nres
+        for m in range(nres,0,-1):
+            fixArray=reduceResolution(extractArray[ref],trlen,m)
+            movArray=reduceResolution(extractArray[n+1],trlen,m)
+            translateIndex=correlation_translate(fixArray,movArray,np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
+            if m>1:
+                translateIndex[:trlen]*=m
         if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
             print('updating... with translation',translateIndex)
             saveTranslateIndex.append([n+1,*translateIndex])

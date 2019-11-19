@@ -31,9 +31,10 @@ History:
     Author: w.x.chan@gmail.com         18NOV2019           - v2.1.1
                                                               -in alignAxes, debug multilevel nres which gave different shape
                                                               -in registrator, added twoD ndarray input
-    Author: w.x.chan@gmail.com         18NOV2019           - v2.1.2
+    Author: w.x.chan@gmail.com         18NOV2019           - v2.1.3
                                                               -in gradient descent, debug maxTranslate
                                                               -in gradient descent, added cap on gradient to 10* errThreshold
+                                                              -in alignAxes, debug multilevel nres of mask
                                                               
 
 Requirements:
@@ -46,7 +47,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.1.1'
+_version='2.1.3'
 
 import numpy as np
 import os
@@ -576,8 +577,10 @@ def reduceResolution(array,lastaxes,nres):
 '''
 external use functions
 '''
-def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=False,initTranslate=True,includeRotate=False,calFill=0,mask=None,nres=1):
+def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=False,initTranslate=True,translateLimit=0.5,includeRotate=False,calFill=0,mask=None,nres=1):
     '''refAxis={'axis':index}'''
+    if isinstance(translateLimit,float):
+        translateLimit=np.ones(len(axesToTranslate))*translateLimit
     trlen=len(axesToTranslate)
     if type(dimSlice)==type(None):
         dimSlice={}
@@ -644,9 +647,18 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
         for m in range(nres,0,-1):
             fixArray=reduceResolution(extractArray[ref],trlen,m)
             movArray=reduceResolution(extractArray[n-1],trlen,m)
+            if m>1 and type(mask)!=type(None):
+                if type(mask)==list:
+                    nresMask=[]
+                    for naxis in range(len(mask)):
+                        nresMask.append((mask[naxis]/m).astype(mask[naxis].dtype))
+                elif type(mask)==np.ndarray:
+                    nresMask=reduceResolution(mask,trlen,m)
+            else:
+                nresMask=mask
             if m>1 and translateIndex:
                 translateIndex[:trlen]/=m
-            translateIndex=correlation_translate(fixArray,movArray,np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
+            translateIndex=correlation_translate(fixArray,movArray,translateLimit,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=nresMask)
             if m>1:
                 translateIndex[:trlen]*=m
         if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
@@ -680,7 +692,16 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
             movArray=reduceResolution(extractArray[n+1],trlen,m)
             if m>1 and translateIndex:
                 translateIndex[:trlen]/=m
-            translateIndex=correlation_translate(fixArray,movArray,np.ones(len(axesToTranslate))*0.5,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=mask)
+            if m>1 and type(mask)!=type(None):
+                if type(mask)==list:
+                    nresMask=[]
+                    for naxis in range(len(mask)):
+                        nresMask.append((mask[naxis]/m).astype(mask[naxis].dtype))
+                elif type(mask)==np.ndarray:
+                    nresMask=reduceResolution(mask,trlen,m)
+            else:
+                nresMask=mask
+            translateIndex=correlation_translate(fixArray,movArray,translateLimit,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=nresMask)
             if m>1:
                 translateIndex[:trlen]*=m
         if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):

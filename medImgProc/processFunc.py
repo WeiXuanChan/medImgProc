@@ -35,6 +35,8 @@ History:
                                                               -in gradient descent, debug maxTranslate
                                                               -in gradient descent, added cap on gradient to 10* errThreshold
                                                               -in alignAxes, debug multilevel nres of mask
+    Author: w.x.chan@gmail.com         19NOV2019           - v2.1.4
+                                                              -in alignAxes, debug boolean of translateaxes
                                                               
 
 Requirements:
@@ -47,7 +49,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.1.3'
+_version='2.1.4'
 
 import numpy as np
 import os
@@ -656,7 +658,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
                     nresMask=reduceResolution(mask,trlen,m)
             else:
                 nresMask=mask
-            if m>1 and translateIndex:
+            if m>1 and type(translateIndex)!=type(None):
                 translateIndex[:trlen]/=m
             translateIndex=correlation_translate(fixArray,movArray,translateLimit,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=nresMask)
             if m>1:
@@ -690,8 +692,6 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
         for m in range(nres,0,-1):
             fixArray=reduceResolution(extractArray[ref],trlen,m)
             movArray=reduceResolution(extractArray[n+1],trlen,m)
-            if m>1 and translateIndex:
-                translateIndex[:trlen]/=m
             if m>1 and type(mask)!=type(None):
                 if type(mask)==list:
                     nresMask=[]
@@ -701,6 +701,8 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
                     nresMask=reduceResolution(mask,trlen,m)
             else:
                 nresMask=mask
+            if m>1 and type(translateIndex)!=type(None):
+                translateIndex[:trlen]/=m
             translateIndex=correlation_translate(fixArray,movArray,translateLimit,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=nresMask)
             if m>1:
                 translateIndex[:trlen]*=m

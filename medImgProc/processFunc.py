@@ -31,6 +31,9 @@ History:
     Author: w.x.chan@gmail.com         18NOV2019           - v2.1.1
                                                               -in alignAxes, debug multilevel nres which gave different shape
                                                               -in registrator, added twoD ndarray input
+    Author: w.x.chan@gmail.com         18NOV2019           - v2.1.2
+                                                              -in gradient descent, debug maxTranslate
+                                                              -in gradient descent, added cap on gradient to 10* errThreshold
                                                               
 
 Requirements:
@@ -143,6 +146,12 @@ class gradient_ascent:
                 break
             #fValtemp=func(self.para,*self.args)
             gradient=self.grad()
+            '''reduce gradient (smoothing)'''
+            for n in range(len(gradient)):
+                if (self.gain*self.slope*gradient[n]) > (self.errThreshold[n]*10.):
+                    gradient[n]=self.errThreshold[n]*10./self.gain/self.slope
+                elif (self.gain*self.slope*gradient[n]) < (-self.errThreshold[n]*10.):
+                    gradient[n]=-self.errThreshold[n]*10./self.gain/self.slope
             newPara=self.para+self.gain*self.slope*gradient
             '''reduce gain'''
             for n in range(len(self.para)):
@@ -163,6 +172,8 @@ class gradient_ascent:
                 if ((newfVal>self.fVal) ^ (self.slope==1)) and np.max(np.abs(newPara-self.para)/self.errThreshold)<1.:
                     newPara=self.para.copy()
                     break
+            if ((newfVal<self.fVal) ^ (self.slope==1)):
+                self.gain*=1.3
             '''calculate error and update'''
             error=np.max(np.abs(newPara-self.para)/self.errThreshold)
             self.para=np.copy(newPara)
@@ -290,7 +301,7 @@ def correlation_translate(arrayA,arrayB,translateLimit,initialTranslate=None,inc
     maxTranslate=np.concatenate((maxTranslate,10.*np.ones(len(initialTranslate)-len(maxTranslate))))
     minTranslate=-maxTranslate
     optimizing_algorithm=gradient_ascent(correlationFunc_translate,initialTranslate,args=(arrayA,arrayB,mask,includeRotate,calFill))
-    optimizing_algorithm.maxPara=np.concatenate((maxTranslate,10.*np.ones(len(initialTranslate)-len(maxTranslate))))
+    optimizing_algorithm.maxPara=maxTranslate
     optimizing_algorithm.minPara=minTranslate
     optimizing_algorithm.errThreshold[len(translateLimit):]=np.ones(len(optimizing_algorithm.errThreshold)-len(translateLimit))*1.5
     optimized_translate=optimizing_algorithm.run()

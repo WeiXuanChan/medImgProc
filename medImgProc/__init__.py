@@ -117,7 +117,7 @@ All rights reserved.
 '''
 import logging
 _version='2.1.5'
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('medImgProc version'+_version)
 logger.info('medImgProc version',_version)
 
 

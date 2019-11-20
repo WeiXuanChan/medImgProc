@@ -21,7 +21,8 @@ Known Bug:
 All rights reserved.
 '''
 _version='1.5.2'
-
+import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
@@ -125,7 +126,7 @@ class image2DGUI:
         if not(event.dblclick) and event.button==1 and event.inaxes==self.ax:
             newPt=np.array([*self.showIndex[:-2],event.ydata,event.xdata])
             self.points=np.vstack((self.points,newPt))
-        #print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %('double' if event.dblclick else 'single', event.button,event.x, event.y, event.xdata, event.ydata))
+        #logger.info('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %('double' if event.dblclick else 'single', event.button,event.x, event.y, event.xdata, event.ydata))
         self.showNewPoints()
     def onKeypress(self,event):
         if event.key == 'escape':#return values and quit
@@ -159,7 +160,7 @@ class image2DGUI:
         elif event.key in self.image.dim:
             self.swapFrame(event.key)
         else:
-            print(event.key)
+            logger.info(event.key)
 
     def switchFrame(self,index,val=1):
         if len(self.showIndex)>=(-index):

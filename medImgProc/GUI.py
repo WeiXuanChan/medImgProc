@@ -1,5 +1,5 @@
 '''
-File: __init__.py
+File: GUI.py
 Description: load all class for medImgProc
              Contains externally usable class
 History:

@@ -100,8 +100,8 @@ History:
                                                             -processFunc v2.0.0
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         18NOV2018           - v2.1.3
-                                                            -processFunc v2.1.3
+  Author: w.x.chan@gmail.com         18NOV2018           - v2.1.5
+                                                            -processFunc v2.1.5
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
 
@@ -115,17 +115,17 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.1.3'
+_version='2.1.5'
 print('medImgProc version',_version)
 
-
+import logging
 import numpy as np
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import matplotlib
 if os.environ.get('DISPLAY','')=='':
-    print('no display found. Using non-interactive Agg backend')
+    logging.warning('no display found. Using non-interactive Agg backend')
     matplotlib.use('Agg')
 import pickle
 try:

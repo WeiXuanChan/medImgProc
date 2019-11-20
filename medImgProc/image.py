@@ -272,7 +272,7 @@ class gaussianSampling:
             self.variance=np.array(self.variance)
         elif type(variance) in [float,int]:
             self.variance=np.zeros(3)
-            logger.info(imgDim,variance,self.imgDimlen)
+            logger.info(str((imgDim,variance,self.imgDimlen)))
             for dimN in range(len(imgDim)):
                 self.variance[dimN]=variance*self.imgDimlen[dimN]**2.
         else:
@@ -286,10 +286,10 @@ class gaussianSampling:
         filterInd=np.nonzero(disSqList<np.log(2.*self.amplitude))
         disSq=np.sum((self.baseCoordMat.reshape((-1,3))[filterInd])**2./2./self.variance.max(),axis=1)
         countList=np.around(self.amplitude*np.exp(-disSq)).astype(int)
-        logger.info('baseCoordMat shape',self.baseCoordMat.shape)
-        logger.info('variance=',self.variance)
-        logger.info('spread=',len(countList),', self weighted=',float(max(countList))/np.sum(countList))
-        logger.info(countList)
+        logger.info('baseCoordMat shape '+str(self.baseCoordMat.shape))
+        logger.info('variance= '+str(self.variance))
+        logger.info('spread= '+str(len(countList))+', self weighted= '+str(float(max(countList))/np.sum(countList)))
+        logger.info(str(countList))
     def __call__(self,image,pixelfloat,fill=0):
         coordAdjust=(np.array(pixelfloat[:3])%1)*self.imgDimlen
         disSqList=np.sum((self.baseCoordMat-coordAdjust)**2./2./self.variance,axis=3).reshape(-1)
@@ -302,7 +302,6 @@ class gaussianSampling:
         value=[]
         for n in range(len(valueList)):
             value+=[valueList[n]]*countList[n]
-        #logger.info(len(countList),countList)
         return value
         
         
@@ -345,7 +344,7 @@ class image:
                     elif type(slicing)==int:
                         toSlice.append(slice(slicing))
                     else:
-                        logger.warning('crop error, no slicing with input:',slicing) 
+                        logger.warning('crop error, no slicing with input: '+str(slicing))
                         toSlice.append(slice(None))
                 self.data=self.data[tuple(toSlice)]
     def clone(self):
@@ -561,7 +560,7 @@ class image:
                 imageio.mimwrite(os.path.normpath(filePath+'/0.'+imageFormat),saveData,format=imageFormat,fps=fps)
             elif len(currentDim)==(2+color):
                 imageio.imwrite(os.path.normpath(filePath+'/0.'+imageFormat),saveData)
-            logger.info(currentDim)
+            logger.info(str(currentDim))
         else:
             recursive2DWrite(saveData,currentDim,axes,filePath,imageFormat,dimRange,fps=fps,color=color)
         dimlen_np=[]
@@ -570,7 +569,7 @@ class image:
                 dimlen_np.append(self.dimlen[self.dim[ti]])
         dimlen_np=np.array(dimlen_np)
         np.savetxt(os.path.normpath(filePath+'/dimensionLength.txt'),dimlen_np)
-        logger.info('Image written to:',filePath)
+        logger.info('Image written to: '+filePath)
         #self.save(os.path.normpath(filePath+'/image.mip'))
     def mimwrite2D(self,filePath,axes=('t','y','x'),vidFormat='avi',dimRange=None,fps=15,color=0):
         self.imwrite2D(filePath,axes=axes,imageFormat=vidFormat,dimRange=dimRange,fps=fps,color=color)
@@ -644,7 +643,7 @@ class image:
             newArray=newArray.transpose(transposeIndex)
             self.data=newArray
         else:
-            logger.warning('Error!!! Stacking Image '+newImage+' of different dimension')
+            logger.warning('Error!!! Stacking Image '+str(newImage)+' of different dimension')
     def insertnewImageList(self,newImageList,stackDim):
         for newImage in newImageList:
             self.insertnewImage(newImage,stackDim)

@@ -147,7 +147,7 @@ class gradient_ascent:
         error=float('inf')
         self.fVal=self.func(self.para,*self.args)
         if report<float('inf'):
-            logger.info('Initial value=',self.fVal,', with',self.para)
+            logger.info('Initial value= '+str(self.fVal)+', with '+str(self.para))
         for count in range(1,self.limitRun):
             if error<1.:
                 break
@@ -184,10 +184,9 @@ class gradient_ascent:
             '''calculate error and update'''
             error=np.max(np.abs(newPara-self.para)/self.errThreshold)
             self.para=np.copy(newPara)
-            #logger.info('iteration',count,', parameters=',self.para)
             self.fVal=newfVal
             if count%report==0:
-                logger.info('iteration',count,', value=',self.fVal)
+                logger.info('iteration '+str(count)+', value= '+str(self.fVal))
         '''fine tune adjustment by errThreshold'''
         logger.info('fine tuning')
         gradient=self.grad()
@@ -206,12 +205,11 @@ class gradient_ascent:
             if (newfVal[tryIndex]*self.slope)>(self.fVal*self.slope) and np.all(np.array(newPara[tryIndex])<=np.array(self.maxPara)) and np.all(np.array(newPara[tryIndex])>=np.array(self.minPara)):
                 self.fVal=newfVal[tryIndex]
                 self.para=np.copy(newPara[tryIndex])
-                #logger.info('Fine adjustment, parameters=',self.para)
                 gradient=self.grad()
             else:
                 break
         if report<float('inf'):
-            logger.info('Final value=',self.fVal,', with',self.para)
+            logger.info('Final value= '+str(self.fVal)+', with '+str(self.para))
         return np.copy(self.para)
 
     def grad(self):
@@ -635,7 +633,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
     translateIndex=None
     saveTranslateIndex=[]
     for n in range(relativeIndexref,0,-1):
-        logger.info('running slice',n-1)
+        logger.info('running slice '+str(n-1))
         if fixedRef:
             ref=relativeIndexref
             indSlice=slice(n-1,n)
@@ -668,7 +666,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
             if m>1:
                 translateIndex[:trlen]*=m
         if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
-            logger.info('updating... with translation',translateIndex)
+            logger.info('updating... with translation '+str(translateIndex))
             saveTranslateIndex.append([n-1,*translateIndex])
             if fixedRef or includeRotate:
                 extractArray[indSlice]=translateArray(extractArray[indSlice],translateIndex,includeRotate,0)
@@ -678,7 +676,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
     nextToTranslate=len(saveTranslateIndex)
     translateIndex=None
     for n in range(relativeIndexref,len(extractArray)-1):
-        logger.info('running slice',n+1)
+        logger.info('running slice '+str(n+1))
         if fixedRef:
             ref=relativeIndexref
             indSlice=slice(n+1,n+2)
@@ -711,7 +709,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
             if m>1:
                 translateIndex[:trlen]*=m
         if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
-            logger.info('updating... with translation',translateIndex)
+            logger.info('updating... with translation '+str(translateIndex))
             saveTranslateIndex.append([n+1,*translateIndex])
             if fixedRef or includeRotate:
                 extractArray[indSlice]=translateArray(extractArray[indSlice],translateIndex,includeRotate,0)
@@ -781,7 +779,7 @@ class alignAxesClass:
         n=len(translateList)
         if n<=ref:
             n=n-1
-        logger.info('running slice',n)
+        logger.info('running slice '+str(n))
         translateIndex=correlation_translate(self.extractArray[ref],self.extractArray[n],np.ones(len(self.axesToTranslate))*0.5,initialTranslate=currenttranslate,includeRotate=self.includeRotate,mask=self.mask)
         return (translateIndex,1)
 def snapDraw_black(image,axesToSearch,subdivide,drawSize={},lengthWeight=0.7):
@@ -909,7 +907,7 @@ def imageRegister(image,stlFile,imageToSTLsize=[],stlRefDim={},baseRefFraction=1
         if baseRefFunc is not None:
             baseRefFraction=baseRefFunc(float(n+1)/image.data.shape[0])
         if baseRefFraction!=1. and  n!=0:
-            logger.info('Registering t',n+1,' wrt t',n)
+            logger.info('Registering t '+str(n+1)+' wrt t '+str(n))
             elastixImageFilter=sitk.ElastixImageFilter()
             elastixImageFilter.LogToFileOn()
             elastixImageFilter.SetFixedImage(sitk.GetImageFromArray(np.copy(image.data[n]), isVector=False))
@@ -918,7 +916,7 @@ def imageRegister(image,stlFile,imageToSTLsize=[],stlRefDim={},baseRefFraction=1
             elastixImageFilter.Execute()
             if verifyImg:
                 sitk.WriteImage(elastixImageFilter.GetResultImage(),pointfile+'Output/resultImgnb'+str(n+1)+'.mha')
-            logger.info('Transforming t',n,' to t',n+1)
+            logger.info('Transforming t '+str(n)+' to t '+str(n+1))
             transformixImageFilter=sitk.TransformixImageFilter()
             transformixImageFilter.LogToFileOn()
             transformixImageFilter.SetTransformParameterMap(elastixImageFilter.GetTransformParameterMap())
@@ -928,7 +926,7 @@ def imageRegister(image,stlFile,imageToSTLsize=[],stlRefDim={},baseRefFraction=1
             transformixImageFilter.Execute()
             newPixelVertice_neighbour=convertElastxOutputToNumpy(pointfile+'Output/outputpoints.txt')
         if baseRefFraction!=0. or n==0:
-            logger.info('Registering t',n+1,' wrt t',0)
+            logger.info('Registering t '+str(n+1)+' wrt t '+str(0))
             elastixImageFilter=sitk.ElastixImageFilter()
             elastixImageFilter.LogToFileOn()
             elastixImageFilter.SetFixedImage(sitk.GetImageFromArray(np.copy(image.data[0]), isVector=False))
@@ -937,7 +935,7 @@ def imageRegister(image,stlFile,imageToSTLsize=[],stlRefDim={},baseRefFraction=1
             elastixImageFilter.Execute()
             if verifyImg:
                 sitk.WriteImage(elastixImageFilter.GetResultImage(),pointfile+'Output/resultImgbase'+str(n+1)+'.mha')
-            logger.info('Transforming t',0,' to t',n+1)
+            logger.info('Transforming t '+str(0)+' to t '+str(n+1))
             transformixImageFilter=sitk.TransformixImageFilter()
             transformixImageFilter.LogToFileOn()
             transformixImageFilter.SetTransformParameterMap(elastixImageFilter.GetTransformParameterMap())
@@ -953,7 +951,7 @@ def imageRegister(image,stlFile,imageToSTLsize=[],stlRefDim={},baseRefFraction=1
         else:
             newPixelVertice=newPixelVertice_base*baseRefFraction+newPixelVertice_neighbour*(1.-baseRefFraction)
         '''write stl'''
-        logger.info('Writing STL file to ',pointfile+'_t'+str(n+1)+'.stl')
+        logger.info('Writing STL file to '+pointfile+'_t'+str(n+1)+'.stl')
         
         ref_mesh.vertices=newPixelVertice*imageToSTLsize
         trimesh.io.export.export_mesh(ref_mesh,pointfile+'_t'+str(n+1)+'.stl')
@@ -994,14 +992,14 @@ def vectorRegister(image,savePath='',stlRefDim={},baseRefFraction=1.,baseRefFunc
         if baseRefFunc is not None:
             baseRefFraction=baseRefFunc(float(n+1)/image.data.shape[0])
         if baseRefFraction!=1. and  n!=startind:
-            logger.info('Registering t',n+1,' wrt t',n)
+            logger.info('Registering t '+str(n+1)+' wrt t '+str(n))
             elastixImageFilter=sitk.ElastixImageFilter()
             elastixImageFilter.LogToFileOn()
             elastixImageFilter.SetFixedImage(sitk.GetImageFromArray(np.copy(image.data[n]), isVector=colorVec))
             elastixImageFilter.SetMovingImage(sitk.GetImageFromArray(np.copy(image.data[n+1]), isVector=colorVec))
             elastixImageFilter.SetParameterMap(parameterMapVector)
             elastixImageFilter.Execute()
-            logger.info('Transforming t',n,' to t',n+1)
+            logger.info('Transforming t '+str(n)+' to t '+str(n+1))
             transformixImageFilter=sitk.TransformixImageFilter()
             transformixImageFilter.LogToFileOn()
             transformixImageFilter.SetTransformParameterMap(elastixImageFilter.GetTransformParameterMap())
@@ -1013,7 +1011,7 @@ def vectorRegister(image,savePath='',stlRefDim={},baseRefFraction=1.,baseRefFunc
                 sitk.WriteImage(elastixImageFilter.GetResultImage(),pointfile+'Output/resultImgnb'+str(n+1)+'.mha')
             newPixelVertice_neighbour=convertElastxOutputToNumpy(pointfile+'Output/outputpoints.txt')
         if baseRefFraction!=0. or n==startind:
-            logger.info('Registering t',n+1,' wrt t',0)
+            logger.info('Registering t '+str(n+1)+' wrt t '+str(0))
             elastixImageFilter=sitk.ElastixImageFilter()
             elastixImageFilter.LogToFileOn()
             elastixImageFilter.SetFixedImage(sitk.GetImageFromArray(np.copy(image.data[0]), isVector=colorVec))
@@ -1024,7 +1022,7 @@ def vectorRegister(image,savePath='',stlRefDim={},baseRefFraction=1.,baseRefFunc
             #Tmap[0]["TransformParameters"]
             if verifyImg:
                 sitk.WriteImage(elastixImageFilter.GetResultImage(),pointfile+'Output/resultImgbase'+str(n+1)+'.mha')
-            logger.info('Transforming t',0,' to t',n+1)
+            logger.info('Transforming t '+str(0)+' to t '+str(n+1))
             transformixImageFilter=sitk.TransformixImageFilter()
             transformixImageFilter.LogToFileOn()
             transformixImageFilter.SetTransformParameterMap(elastixImageFilter.GetTransformParameterMap())
@@ -1042,7 +1040,7 @@ def vectorRegister(image,savePath='',stlRefDim={},baseRefFraction=1.,baseRefFunc
         
         vector=newPixelVertice-pixelVertice #xyz format
         vectorMap=np.fliplr(vector).reshape((*image.data.shape[1:],len(image.data.shape[1:])))
-        logger.info('Writing MAT file to ',pointfile+str(n+1)+'.mat')
+        logger.info('Writing MAT file to '+pointfile+str(n+1)+'.mat')
         sio.savemat(pointfile+str(n+1)+'.mat',{('registeredVector'+str(n+1)):vectorMap})
         if baseRefFraction!=1.:
             np.savetxt(pointfile+'Output/outputpoints.pts',newPixelVertice,header='point\n'+str(len(pixelVertice)),comments='')
@@ -1117,7 +1115,7 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
     timeList=np.array(range(len(image.data)))*image.dimlen['t']
     np.savetxt(savePath+'/transform/timeList',timeList)
     for n in range(startTime,image.data.shape[0]-1):
-        logger.info('Registering t',n+1,' wrt t',n)
+        logger.info('Registering t '+str(n+1)+' wrt t '+str(n))
         elastixImageFilter=sitk.ElastixImageFilter()
         elastixImageFilter.LogToFileOff()
         elastixImageFilter.LogToConsoleOff()
@@ -1137,7 +1135,7 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
         if writeImg:
             sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(n)+'to'+str(n+1)+'_resultImg.mha')
         if cyclic:
-            logger.info('Registering t',n,' wrt t',n+1)
+            logger.info('Registering t '+str(n)+' wrt t '+str(n+1))
             elastixImageFilter=sitk.ElastixImageFilter()
             elastixImageFilter.LogToFileOff()
             elastixImageFilter.LogToConsoleOff()
@@ -1151,7 +1149,7 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
             if writeImg:
                 sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(n+1)+'to'+str(n)+'_resultImg.mha')
         elif n!=0:
-            logger.info('Registering t',n+1,' wrt t',0)
+            logger.info('Registering t '+str(n+1)+' wrt t '+str(0))
             elastixImageFilter=sitk.ElastixImageFilter()
             elastixImageFilter.LogToFileOff()
             elastixImageFilter.LogToConsoleOff()
@@ -1171,7 +1169,7 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
             if writeImg:
                 sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t0to'+str(n+1)+'_resultImg.mha')
     if cyclic:
-        logger.info('Registering t',0,' wrt t',image.data.shape[0]-1)
+        logger.info('Registering t '+str(0)+' wrt t '+str(image.data.shape[0]-1))
         elastixImageFilter=sitk.ElastixImageFilter()
         elastixImageFilter.LogToFileOff()
         elastixImageFilter.LogToConsoleOff()
@@ -1190,7 +1188,7 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
             sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t'+str(image.data.shape[0]-1)+'to'+str(0)+'_'+str(m)+'.txt')
         if writeImg:
             sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(image.data.shape[0]-1)+'to'+str(0)+'_resultImg.mha')
-        logger.info('Registering t',image.data.shape[0]-1,' wrt t',0)
+        logger.info('Registering t '+str(image.data.shape[0]-1)+' wrt t '+str(0))
         elastixImageFilter=sitk.ElastixImageFilter()
         elastixImageFilter.LogToFileOff()
         elastixImageFilter.LogToConsoleOff()
@@ -1304,7 +1302,7 @@ def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',scaleImg=1
             sitk.WriteParameterFile(Tmap[m],savePath+'/transform/'+fileName+'.txt')
     else:
         for n in tInd:
-            logger.info('Registering t',n)
+            logger.info('Registering t '+str(n))
             elastixImageFilter=sitk.ElastixImageFilter()
             elastixImageFilter.LogToFileOff()
             elastixImageFilter.LogToConsoleOff()
@@ -1395,7 +1393,7 @@ def TmapRegister_rigid(image1,image2,savePath='',fileInit=None,fileName='img2img
         fileInit=savePath+'/transform/'+fileName+'_init.txt'
     if os.path.isfile(fileInit):
         elastixImageFilter.SetInitialTransformParameterFileName(fileInit)
-        logger.info('Set initial transform parameters:',fileInit)
+        logger.info('Set initial transform parameters: '+str(fileInit))
     elastixImageFilter.SetParameterMap(parameterMapVector)
     elastixImageFilter.Execute()
     Tmap=elastixImageFilter.GetTransformParameterMap()
@@ -1618,7 +1616,7 @@ def inverseRegister(image,refTimeInd,savePath='',origin=(0.,0.,0.),bgrid=2.,bwei
     sitk.WriteImage(fixImg,savePath+'/t'+str(refTimeInd)+'Img.mha')
     for n in range(refTimeInd):
         if n!=0:
-            logger.info('Registering t',n,' wrt t',n+1)
+            logger.info('Registering t '+str(n)+' wrt t '+str(n+1))
             elastixImageFilter=sitk.ElastixImageFilter()
             elastixImageFilter.LogToFileOn()
             elastixImageFilter.LogToConsoleOff()
@@ -1636,7 +1634,7 @@ def inverseRegister(image,refTimeInd,savePath='',origin=(0.,0.,0.),bgrid=2.,bwei
             for m in range(len(Tmap)):
                 sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t'+str(n+1)+'to'+str(n)+'_'+str(m)+'.txt')
         
-        logger.info('Registering t',0,' wrt t',n+1)
+        logger.info('Registering t '+str(0)+' wrt t '+str(n+1))
         elastixImageFilter=sitk.ElastixImageFilter()
         elastixImageFilter.LogToFileOn()
         elastixImageFilter.LogToConsoleOff()
@@ -2133,7 +2131,7 @@ class registrator:
         output_size = list(image_f.GetSize())
         output_size[2] = output_size[2]*round(dz/dx)
         output_size = [int(i * expandFactor) for i in output_size]
-        logger.info(output_size)
+        logger.info(str(output_size))
         size = max(output_size)
         output_size = tuple([size,size,size])
         output_origin = [0, 0, 0]
@@ -2173,7 +2171,6 @@ class SAC:
                 value=np.array([0,0])
             else:
                 value=0
-            #logger.info('no value at coords',x,y,z)
         elif (val.max()-val.min())<=3:
             if self.returnStats:
                 value=np.array([self.func(val),0])
@@ -2239,7 +2236,7 @@ class SAC:
         return value
 def getPhaseCong(image,saveTo,alpha=0.6,minWaveLength=5,schemeArgs=None):
     logger.debug('Please rearrange the axes in this order [two other axes... , main direction of beam,2D perpendicular direction]')
-    logger.debug('Current axis arrangement:',image.dim)
+    logger.debug('Current axis arrangement: '+str(image.dim))
     #Scheme arguements = None => beam parallel to y aiming y+
     #Scheme arguements = float => beam at an angle towards y+ with x+ positive
     #Scheme arguements = [y,x] => beam originate at y,x

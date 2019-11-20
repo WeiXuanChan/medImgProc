@@ -117,7 +117,8 @@ All rights reserved.
 '''
 import logging
 _version='2.1.5'
-logging.info('medImgProc version',_version)
+logger = logging.getLogger(__name__)
+logger.info('medImgProc version',_version)
 
 
 import numpy as np
@@ -126,7 +127,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import matplotlib
 if os.environ.get('DISPLAY','')=='':
-    logging.warning('no display found. Using non-interactive Agg backend')
+    logger.warning('no display found. Using non-interactive Agg backend')
     matplotlib.use('Agg')
 import pickle
 try:

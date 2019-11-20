@@ -118,7 +118,7 @@ All rights reserved.
 import logging
 _version='2.1.5'
 logger = logging.getLogger('medImgProc v'+_version)
-logger.info('medImgProc version',_version)
+logger.info('medImgProc version '+_version)
 
 
 import numpy as np

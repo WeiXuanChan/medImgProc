@@ -39,7 +39,7 @@ History:
                                                               -in alignAxes, debug boolean of translateaxes
     Author: w.x.chan@gmail.com         19NOV2019           - v2.1.5
                                                               -change print to logging
-    Author: w.x.chan@gmail.com         19NOV2019           - v2.1.6
+    Author: w.x.chan@gmail.com         19NOV2019           - v2.1.7
                                                               -in alignAxes, debug boolean of translateaxes
                                                               
 
@@ -53,7 +53,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.1.6'
+_version='2.1.7'
 
 import logging
 logger = logging.getLogger(__name__)

@@ -39,6 +39,8 @@ History:
                                                               -in alignAxes, debug boolean of translateaxes
     Author: w.x.chan@gmail.com         19NOV2019           - v2.1.5
                                                               -change print to logging
+    Author: w.x.chan@gmail.com         19NOV2019           - v2.1.6
+                                                              -in alignAxes, debug boolean of translateaxes
                                                               
 
 Requirements:
@@ -51,7 +53,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.1.5'
+_version='2.1.6'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -665,7 +667,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
             translateIndex=correlation_translate(fixArray,movArray,translateLimit,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=nresMask)
             if m>1:
                 translateIndex[:trlen]*=m
-        if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
+        if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.any(np.abs(translateIndex)[trlen:]>0.05)):
             logger.info('updating... with translation '+str(translateIndex))
             saveTranslateIndex.append([n-1,*translateIndex])
             if fixedRef or includeRotate:
@@ -708,7 +710,7 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
             translateIndex=correlation_translate(fixArray,movArray,translateLimit,initialTranslate=translateIndex,includeRotate=includeRotate,calFill=calFill,mask=nresMask)
             if m>1:
                 translateIndex[:trlen]*=m
-        if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.abs(translateIndex)[:-int(len(translateIndex)/2)]>0.05):
+        if (np.abs(translateIndex)>=0.5).any() or (includeRotate and np.any(np.abs(translateIndex)[trlen:]>0.05)):
             logger.info('updating... with translation '+str(translateIndex))
             saveTranslateIndex.append([n+1,*translateIndex])
             if fixedRef or includeRotate:

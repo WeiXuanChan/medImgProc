@@ -126,7 +126,6 @@ class image2DGUI:
         if not(event.dblclick) and event.button==1 and event.inaxes==self.ax:
             newPt=np.array([*self.showIndex[:-2],event.ydata,event.xdata])
             self.points=np.vstack((self.points,newPt))
-        #logger.info('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %('double' if event.dblclick else 'single', event.button,event.x, event.y, event.xdata, event.ydata))
         self.showNewPoints()
     def onKeypress(self,event):
         if event.key == 'escape':#return values and quit

@@ -35,7 +35,8 @@ Known Bug:
 All rights reserved.
 '''
 _version='1.8.0'
-
+import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 from scipy.interpolate import interp1d
@@ -81,13 +82,13 @@ def dataInColorFormat(imageClass,colorFormat):
     Return image with color base on colorFormat
     '''
     if colorFormat in imageClass.dim:
-        print('Error: Image is already in '+colorFormat+' color format.')
+        logger.warning('Error: Image is already in '+colorFormat+' color format.')
     elif colorFormat=='RGB':
         dimAcsCount=list(range(1,len(imageClass.data.shape)+1))
         imageArray=np.array([imageClass.data[:],imageClass.data[:],imageClass.data[:]])
         return imageArray.transpose(*dimAcsCount,0)
     else:
-        print('Error: color format is not supported.')
+        logger.warning('Error: color format is not supported.')
 def dataInGreyscaleFormat(imageClass):
     '''
     Return greyscale image:
@@ -98,7 +99,7 @@ def dataInGreyscaleFormat(imageClass):
         imageArrayWithColorFirst=imageClass.data.transpose(RGBFirstIndex)
         return np.mean(imageArrayWithColorFirst,axis=0)
     else:
-        print('Error: Image is already in greyscale format or format not supported.')
+        logger.warning('Error: Image is already in greyscale format or format not supported.')
 def datatypeMinMax(dtype):
     maxI=float('inf')
     minI=float('-inf')
@@ -271,7 +272,7 @@ class gaussianSampling:
             self.variance=np.array(self.variance)
         elif type(variance) in [float,int]:
             self.variance=np.zeros(3)
-            print(imgDim,variance,self.imgDimlen)
+            logger.info(imgDim,variance,self.imgDimlen)
             for dimN in range(len(imgDim)):
                 self.variance[dimN]=variance*self.imgDimlen[dimN]**2.
         else:
@@ -285,10 +286,10 @@ class gaussianSampling:
         filterInd=np.nonzero(disSqList<np.log(2.*self.amplitude))
         disSq=np.sum((self.baseCoordMat.reshape((-1,3))[filterInd])**2./2./self.variance.max(),axis=1)
         countList=np.around(self.amplitude*np.exp(-disSq)).astype(int)
-        print('baseCoordMat shape',self.baseCoordMat.shape)
-        print('variance=',self.variance)
-        print('spread=',len(countList),', self weighted=',float(max(countList))/np.sum(countList))
-        print(countList)
+        logger.info('baseCoordMat shape',self.baseCoordMat.shape)
+        logger.info('variance=',self.variance)
+        logger.info('spread=',len(countList),', self weighted=',float(max(countList))/np.sum(countList))
+        logger.info(countList)
     def __call__(self,image,pixelfloat,fill=0):
         coordAdjust=(np.array(pixelfloat[:3])%1)*self.imgDimlen
         disSqList=np.sum((self.baseCoordMat-coordAdjust)**2./2./self.variance,axis=3).reshape(-1)
@@ -301,7 +302,7 @@ class gaussianSampling:
         value=[]
         for n in range(len(valueList)):
             value+=[valueList[n]]*countList[n]
-        #print(len(countList),countList)
+        #logger.info(len(countList),countList)
         return value
         
         
@@ -344,7 +345,7 @@ class image:
                     elif type(slicing)==int:
                         toSlice.append(slice(slicing))
                     else:
-                        print('crop error, no slicing with input:',slicing) 
+                        logger.warning('crop error, no slicing with input:',slicing) 
                         toSlice.append(slice(None))
                 self.data=self.data[tuple(toSlice)]
     def clone(self):
@@ -560,7 +561,7 @@ class image:
                 imageio.mimwrite(os.path.normpath(filePath+'/0.'+imageFormat),saveData,format=imageFormat,fps=fps)
             elif len(currentDim)==(2+color):
                 imageio.imwrite(os.path.normpath(filePath+'/0.'+imageFormat),saveData)
-            print(currentDim)
+            logger.info(currentDim)
         else:
             recursive2DWrite(saveData,currentDim,axes,filePath,imageFormat,dimRange,fps=fps,color=color)
         dimlen_np=[]
@@ -569,7 +570,7 @@ class image:
                 dimlen_np.append(self.dimlen[self.dim[ti]])
         dimlen_np=np.array(dimlen_np)
         np.savetxt(os.path.normpath(filePath+'/dimensionLength.txt'),dimlen_np)
-        print('Image written to:',filePath)
+        logger.info('Image written to:',filePath)
         #self.save(os.path.normpath(filePath+'/image.mip'))
     def mimwrite2D(self,filePath,axes=('t','y','x'),vidFormat='avi',dimRange=None,fps=15,color=0):
         self.imwrite2D(filePath,axes=axes,imageFormat=vidFormat,dimRange=dimRange,fps=fps,color=color)
@@ -643,7 +644,7 @@ class image:
             newArray=newArray.transpose(transposeIndex)
             self.data=newArray
         else:
-            print('Error!!! Stacking Image '+newImage+' of different dimension')
+            logger.warning('Error!!! Stacking Image '+newImage+' of different dimension')
     def insertnewImageList(self,newImageList,stackDim):
         for newImage in newImageList:
             self.insertnewImage(newImage,stackDim)
@@ -731,8 +732,7 @@ class image:
                 if img.shape[-1]>4 and len(dimension)==dim:
                     dimension=list(DEFAULT_VOL_DIMENSION)
             if len(dimension)<dim:
-                print('Error loading image file.'+HINT_DIMENSION_LIST)
-                return
+                raise Exception('Error loading image file.'+HINT_DIMENSION_LIST)
             else:
                 self.data=np.array(img)
                 self.dim=dimension[:dim]
@@ -755,8 +755,7 @@ class image:
             if dimension is None:
                 dimension=list(DEFAULT_VOL_DIMENSION)
             if len(dimension)<dim:
-                print('Error loading volume file.'+HINT_DIMENSION_LIST)
-                return
+                raise Exception('Error loading volume file.'+HINT_DIMENSION_LIST)
             else:
                 self.data=np.array(img)
                 self.dim=dimension[:dim]
@@ -782,7 +781,7 @@ class image:
                 break
             if len(dimension)<dim:
                 self.dtype=None
-                print('Error loading video file.'+HINT_DIMENSION_LIST)
+                raise Exception('Error loading video file.'+HINT_DIMENSION_LIST)
                 return
             else:
                 self.data=np.zeros((frames,*frameShape),dtype=self.dtype)

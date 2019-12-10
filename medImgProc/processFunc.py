@@ -41,6 +41,8 @@ History:
                                                               -change print to logging
     Author: w.x.chan@gmail.com         19NOV2019           - v2.1.7
                                                               -in alignAxes, debug boolean of translateaxes
+    Author: w.x.chan@gmail.com         19NOV2019           - v2.2.0
+                                                              -in alignAxes, debug boolean of translateaxes
                                                               
 
 Requirements:
@@ -53,7 +55,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.1.7'
+_version='2.2.0'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1482,7 +1484,10 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
     else:
         oriPos=np.loadtxt(stlFile,delimiter=delimiter)/scale
     np.savetxt(savePath+'/input0.pts',oriPos,header='point\n'+str(len(oriPos)),comments='')
-
+    if oriPos.shape[-1]>5 or len(oriPos.shape)!=2:
+        trfImage=True
+    else:
+        trfImage=False
     Tmap=[]#SimpleITK.VectorOfParameterMap()
     Tmap.append(sitk.ReadParameterFile(trfFile))
     
@@ -1490,31 +1495,36 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
     transformixImageFilter.LogToFileOff()
     transformixImageFilter.LogToConsoleOff()
     transformixImageFilter.SetTransformParameterMap(Tmap)
-    if os.path.isfile(mhaFile):
-        transformixImageFilter.SetMovingImage(sitk.ReadImage(mhaFile))
-    elif os.path.isfile(savePath+'/t0Img.mha'):
-        transformixImageFilter.SetMovingImage(sitk.ReadImage(savePath+'/t0Img.mha'))
+    if trfImage:
+        transformixImageFilter.SetMovingImage(sitk.GetImageFromArray(oriPos), isVector=False))
     else:
-        transformixImageFilter.SetMovingImage(sitk.GetImageFromArray(np.zeros(np.ceil(oriPos.max(axis=0)*1.1).astype(int)[::-1]), isVector=False))
-    
-    
-    transformixImageFilter.SetFixedPointSetFileName(savePath+'/input0.pts')
+        if os.path.isfile(mhaFile):
+            transformixImageFilter.SetMovingImage(sitk.ReadImage(mhaFile))
+        elif os.path.isfile(savePath+'/t0Img.mha'):
+            transformixImageFilter.SetMovingImage(sitk.ReadImage(savePath+'/t0Img.mha'))
+        else:
+            transformixImageFilter.SetMovingImage(sitk.GetImageFromArray(np.zeros(np.ceil(oriPos.max(axis=0)*1.1).astype(int)[::-1]), isVector=False))
+        transformixImageFilter.SetFixedPointSetFileName(savePath+'/input0.pts')
     transformixImageFilter.SetOutputDirectory(savePath)
     transformixImageFilter.Execute()
-
-    with open (savePath+'/outputpoints.txt', "r") as myfile:
-        data=myfile.readlines()
-    newPos=[]
-    for string in data:
-        result = re.search('OutputPoint(.*)Deformation', string)
-        newPos.append(np.fromstring(result.group(1)[5:-6], sep=' '))
-    newPos=np.array(newPos)
-    if stlFile[-3:]=='stl':
-        ref_mesh.vertices=newPos*scale
-        trimesh.io.export.export_mesh(ref_mesh,savePath+'/'+fileName+'.stl')
+    if trfImage:
+        newPos=sitk.GetArrayFromImage(transformixImageFilter.GetResultImage())
+        sitk.WriteImage(transformixImageFilter.GetResultImage(),savePath+'/'+fileName+'.mha')
     else:
-        np.savetxt(savePath+'/'+fileName+'.txt',newPos*scale)
-    return newPos*scale
+        with open (savePath+'/outputpoints.txt', "r") as myfile:
+            data=myfile.readlines()
+        newPos=[]
+        for string in data:
+            result = re.search('OutputPoint(.*)Deformation', string)
+            newPos.append(np.fromstring(result.group(1)[5:-6], sep=' '))
+        newPos=np.array(newPos)
+        if stlFile[-3:]=='stl':
+            ref_mesh.vertices=newPos*scale
+            trimesh.io.export.export_mesh(ref_mesh,savePath+'/'+fileName+'.stl')
+        else:
+            np.savetxt(savePath+'/'+fileName+'.txt',newPos*scale)
+        newPos=newPos*scale
+    return newPos
 def fittransform(savePath,timeStepNo,addSaveStr='_cumulative'):
     data=[]
     for n in range(timeStepNo):

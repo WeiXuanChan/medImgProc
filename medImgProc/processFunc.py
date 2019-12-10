@@ -41,7 +41,7 @@ History:
                                                               -change print to logging
     Author: w.x.chan@gmail.com         19NOV2019           - v2.1.7
                                                               -in alignAxes, debug boolean of translateaxes
-    Author: w.x.chan@gmail.com         19NOV2019           - v2.2.1
+    Author: w.x.chan@gmail.com         19NOV2019           - v2.2.2
                                                               -in transform_img2img, allow image np.ndarray input
                                                               
 
@@ -55,7 +55,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.2.1'
+_version='2.2.2'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1496,7 +1496,7 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
     transformixImageFilter.LogToConsoleOff()
     transformixImageFilter.SetTransformParameterMap(Tmap)
     if trfImage:
-        transformixImageFilter.SetMovingImage(sitk.GetImageFromArray(oriPos), isVector=False)
+        transformixImageFilter.SetMovingImage(sitk.GetImageFromArray(oriPos, isVector=False))
     else:
         if os.path.isfile(mhaFile):
             transformixImageFilter.SetMovingImage(sitk.ReadImage(mhaFile))

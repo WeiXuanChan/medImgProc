@@ -43,6 +43,8 @@ History:
                                                               -in alignAxes, debug boolean of translateaxes
     Author: w.x.chan@gmail.com         19NOV2019           - v2.2.3
                                                               -in transform_img2img, allow image np.ndarray input
+    Author: w.x.chan@gmail.com         11DEC2019           - v2.2.4
+                                                              -in transform_img2img, edit not to savetxt of oripos
                                                               
 
 Requirements:
@@ -1483,11 +1485,12 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
         oriPos=np.array(ref_mesh.vertices)/scale
     else:
         oriPos=np.loadtxt(stlFile,delimiter=delimiter)/scale
-    np.savetxt(savePath+'/input0.pts',oriPos,header='point\n'+str(len(oriPos)),comments='')
+    
     if oriPos.shape[-1]>5 or len(oriPos.shape)!=2:
         trfImage=True
     else:
         trfImage=False
+        np.savetxt(savePath+'/input0.pts',oriPos,header='point\n'+str(len(oriPos)),comments='')
     Tmap=[]#SimpleITK.VectorOfParameterMap()
     Tmap.append(sitk.ReadParameterFile(trfFile))
     

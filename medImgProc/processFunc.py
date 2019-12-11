@@ -57,7 +57,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.2.3'
+_version='2.2.4'
 
 import logging
 logger = logging.getLogger(__name__)

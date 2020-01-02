@@ -45,7 +45,7 @@ History:
                                                               -in transform_img2img, allow image np.ndarray input
     Author: w.x.chan@gmail.com         11DEC2019           - v2.2.4
                                                               -in transform_img2img, edit not to savetxt of oripos
-    Author: w.x.chan@gmail.com         02JAN2020           - v2.2.5
+    Author: w.x.chan@gmail.com         02JAN2020           - v2.2.7
                                                               -in alignAxes_translate, add mask type tuple
                                                               
 
@@ -59,7 +59,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.2.5'
+_version='2.2.7'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -296,9 +296,12 @@ def correlation_translate(arrayA,arrayB,translateLimit,initialTranslate=None,inc
         initialTranslate=np.zeros(iniTrlen)
     if type(mask)!=type(None):
         if type(mask)!=np.ndarray:
-            sliceList=[]
-            for n in range(len(mask)):
-                sliceList.append(slice(mask[n][0],mask[n][1]))
+            if type(mask[0])!=slice:
+                sliceList=[]
+                for n in range(len(mask)):
+                    sliceList.append(slice(mask[n][0],mask[n][1]))
+            else:
+                sliceList=mask
             mask=np.ones(arrayA.shape)
             mask[sliceList]=0
         elif mask.shape!=arrayA.shape:

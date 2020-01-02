@@ -45,7 +45,7 @@ History:
                                                               -in transform_img2img, allow image np.ndarray input
     Author: w.x.chan@gmail.com         11DEC2019           - v2.2.4
                                                               -in transform_img2img, edit not to savetxt of oripos
-    Author: w.x.chan@gmail.com         02JAN2020           - v2.2.7
+    Author: w.x.chan@gmail.com         02JAN2020           - v2.2.8
                                                               -in alignAxes_translate, add mask type tuple
                                                               
 
@@ -59,7 +59,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.2.7'
+_version='2.2.8'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -727,7 +727,10 @@ def alignAxes_translate(image,axesToTranslate,refAxis,dimSlice=None,fixedRef=Fal
     if not(fixedRef) and not(includeRotate):
         for n in range(nextToTranslate,len(saveTranslateIndex)):
             extractArray[saveTranslateIndex[n][0]]=translateArray(extractArray[saveTranslateIndex[n][0]],np.array(saveTranslateIndex)[nextToTranslate:n,1:].sum(axis=0),includeRotate,0)
-    
+    if len(saveTranslateIndex)==0:
+        saveTranslateIndex=np.zeros((0,len(translateIndex)))
+    else:
+        saveTranslateIndex=np.array(saveTranslateIndex)
     image.data[dimensionSlice]=np.copy(extractArray)
     image.rearrangeDim(returnDim,True)
     return (image,np.array(saveTranslateIndex))

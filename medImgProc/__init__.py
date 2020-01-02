@@ -104,8 +104,8 @@ History:
                                                             -processFunc v2.1.5
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         02JAN2020           - v2.2.7
-                                                            -processFunc v2.2.7
+  Author: w.x.chan@gmail.com         02JAN2020           - v2.2.8
+                                                            -processFunc v2.2.8
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
 
@@ -120,7 +120,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.2.7'
+_version='2.2.8'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 

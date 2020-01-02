@@ -29,83 +29,83 @@ Description: load all class for medImgProc
 History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
-  Author: w.x.chan@gmail.com         12JAN2018           - Created
-  Author: w.x.chan@gmail.com         12JAN2018           - v1.3.2
+  Author: w.x.chan@gmail.com         12JAN2019           - Created
+  Author: w.x.chan@gmail.com         12JAN2019           - v1.3.2
                                                             -processFunc v1.3.0
                                                             -Image v1.0.0
                                                             -GUI v1.0.0
-  Author: w.x.chan@gmail.com         12JAN2018           - v1.4.2
+  Author: w.x.chan@gmail.com         12JAN2019           - v1.4.2
                                                             -processFunc v1.3.0
                                                             -Image v1.4.2
                                                             -GUI v1.4.0
-  Author: w.x.chan@gmail.com         08OCT2018           - v1.5.2
+  Author: w.x.chan@gmail.com         08OCT2019           - v1.5.2
                                                             -processFunc v1.3.0
                                                             -Image v1.4.2
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         08OCT2018           - v1.5.4
+  Author: w.x.chan@gmail.com         08OCT2019           - v1.5.4
                                                             -processFunc v1.3.0
                                                             -Image v1.5.4
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         15OCT2018           - v1.5.5
+  Author: w.x.chan@gmail.com         15OCT2019           - v1.5.5
                                                             -processFunc v1.3.0
                                                             -Image v1.5.5
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         15OCT2018           - v1.6.1
+  Author: w.x.chan@gmail.com         15OCT2019           - v1.6.1
                                                                 -added combine grescale image to color
                                                             -processFunc v1.3.0
                                                             -Image v1.5.5
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         29OCT2018           - v1.6.3
+  Author: w.x.chan@gmail.com         29OCT2019           - v1.6.3
                                                                 -added point based combine to function combine
                                                             -processFunc v1.3.0
                                                             -Image v1.6.2
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         29OCT2018           - v1.6.4
+  Author: w.x.chan@gmail.com         29OCT2019           - v1.6.4
                                                             -processFunc v1.3.0
                                                             -Image v1.6.4
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         29OCT2018           - v1.6.5
+  Author: w.x.chan@gmail.com         29OCT2019           - v1.6.5
                                                             -processFunc v1.3.0
                                                             -Image v1.6.5
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         30OCT2018           - v1.6.6
+  Author: w.x.chan@gmail.com         30OCT2019           - v1.6.6
                                                             -processFunc v1.6.6
                                                             -Image v1.6.5
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         30OCT2018           - v1.7.0
+  Author: w.x.chan@gmail.com         30OCT2019           - v1.7.0
                                                             -processFunc v1.7.0
                                                             -Image v1.6.5
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         31OCT2018           - v1.7.3
+  Author: w.x.chan@gmail.com         31OCT2019           - v1.7.3
                                                             -processFunc v1.7.3
                                                             -Image v1.6.5
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         08NOV2018           - v1.7.6
+  Author: w.x.chan@gmail.com         08NOV2019           - v1.7.6
                                                             -processFunc v1.7.3
                                                             -Image v1.7.6
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         08NOV2018           - v1.8.0
+  Author: w.x.chan@gmail.com         08NOV2019           - v1.8.0
                                                             -processFunc v1.7.3
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         13NOV2018           - v1.8.5
+  Author: w.x.chan@gmail.com         13NOV2019           - v1.8.5
                                                             -processFunc v1.8.5
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         13NOV2018           - v1.9.1
+  Author: w.x.chan@gmail.com         13NOV2019           - v1.9.1
                                                             -processFunc v1.9.1
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         13NOV2018           - v2.0.0
+  Author: w.x.chan@gmail.com         13NOV2019           - v2.0.0
                                                             -processFunc v2.0.0
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         18NOV2018           - v2.1.7
+  Author: w.x.chan@gmail.com         18NOV2019           - v2.1.7
                                                             -processFunc v2.1.5
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         10DEC2018           - v2.2.4
-                                                            -processFunc v2.2.4
+  Author: w.x.chan@gmail.com         02JAN2020           - v2.2.5
+                                                            -processFunc v2.2.5
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
 
@@ -120,7 +120,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.2.4'
+_version='2.2.5'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 

@@ -11,8 +11,9 @@ Author: w.x.chan@gmail.com           08OCT2019           - v1.4.0
 Author: w.x.chan@gmail.com           08OCT2019           - v1.5.2
                                                               -added Intensity scaling
                                                               - lower slider
-Author: w.x.chan@gmail.com           10Jan2020           - v2.3.0
+Author: w.x.chan@gmail.com           10Jan2020           - v2.3.1
                                                               -added cubic spline line drawing
+                                                              -removed latex dependency
 Requirements:
     numpy.py
     matplotlib.py
@@ -31,7 +32,7 @@ import matplotlib
 from matplotlib.widgets import Slider
 from matplotlib.widgets import Button
 from scipy import interpolate
-matplotlib.rc('text', usetex=True)
+#matplotlib.rc('text', usetex=True)
 '''
 variables
 '''
@@ -58,9 +59,9 @@ def dimToTitle(dimension,showIndex):
     for n in range(len(dimension)):
         titleOutput+=dimension[n]+':'+str(showIndex[n])
         if n==0:
-            titleOutput+=r'$\leftrightarrow$ \hspace{1cm} '
+            titleOutput+='<>   '#r'$\leftrightarrow$ \hspace{1cm} '
         else:
-            titleOutput+=r'$\updownarrow$'
+            titleOutput+='^v'#r'$\updownarrow$'
     #titleOutput+='\n '+r'$\leftarrow$ $\rightarrow$ \hspace{1cm} $\uparrow$ $\downarrow$'
     
     return titleOutput

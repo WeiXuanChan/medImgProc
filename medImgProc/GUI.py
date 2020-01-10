@@ -11,7 +11,7 @@ Author: w.x.chan@gmail.com           08OCT2019           - v1.4.0
 Author: w.x.chan@gmail.com           08OCT2019           - v1.5.2
                                                               -added Intensity scaling
                                                               - lower slider
-Author: w.x.chan@gmail.com           10Jan2020           - v2.3.4
+Author: w.x.chan@gmail.com           10Jan2020           - v2.3.5
                                                               -added cubic spline line drawing
                                                               -removed latex dependency
                                                               -debug function show() in image2DGUI
@@ -24,7 +24,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.3.4'
+_version='2.3.5'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -135,7 +135,7 @@ class image2DGUI:
         self.sSlide=[]
         
         self.manualToleranceRatio=manualToleranceRatio
-        self.manualTolerance=(min(*self.image.data.shape[-2:])*self.manualToleranceRatio)**2.
+        self.manualTolerance=(max(*self.image.data.shape[-2:])*self.manualToleranceRatio)**2.
         
         self.loadImageFrame()
         if showNow:
@@ -301,7 +301,7 @@ class image2DGUI:
             self.points=self.points[:,transposeIndex]
             for nline in range(len(self.lines)):
                 self.lines[nline]=self.lines[nline][:,transposeIndex]
-            self.manualTolerance=(min(*self.image.data.shape[-2:])*self.manualToleranceRatio)**2.
+            self.manualTolerance=(max(*self.image.data.shape[-2:])*self.manualToleranceRatio)**2.
             self.loadImageFrame()
             self.showNewFrame()
     def showNewFrame(self):

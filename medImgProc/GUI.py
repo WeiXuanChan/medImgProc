@@ -131,9 +131,11 @@ class image2DGUI:
                 
         self.axslide=[]
         self.sSlide=[]
-        self.loadImageFrame()
+        
         self.manualToleranceRatio=manualToleranceRatio
         self.manualTolerance=(min(*self.image.data.shape[-2:])*self.manualToleranceRatio)**2.
+        
+        self.loadImageFrame()
         if showNow:
             plt.show()
     def sliderUpdate(self,val):
@@ -415,4 +417,5 @@ class image2DGUI:
         self.points=self.points[:-1,:]
         self.showNewPoints()
     def show(self):
+        self.loadImageFrame()
         plt.show()

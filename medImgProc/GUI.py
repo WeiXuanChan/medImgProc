@@ -5,12 +5,14 @@ Description: load all class for medImgProc
 History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
-  Author: w.x.chan@gmail.com         12JAN2018           - Created
-Author: w.x.chan@gmail.com           08OCT2018           - v1.4.0
+  Author: w.x.chan@gmail.com         12JAN2019           - Created
+Author: w.x.chan@gmail.com           08OCT2019           - v1.4.0
                                                               -added colortoggler
-Author: w.x.chan@gmail.com           08OCT2018           - v1.5.2
+Author: w.x.chan@gmail.com           08OCT2019           - v1.5.2
                                                               -added Intensity scaling
                                                               - lower slider
+Author: w.x.chan@gmail.com           10Jan2020           - v2.3.0
+                                                              -added cubic spline line drawing
 Requirements:
     numpy.py
     matplotlib.py
@@ -20,13 +22,15 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.5.2'
+_version='2.3.0'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib.widgets import Slider
+from matplotlib.widgets import Button
+from scipy import interpolate
 matplotlib.rc('text', usetex=True)
 '''
 variables
@@ -41,7 +45,7 @@ def getLastTwoDimArray(imageArray,dimLoad,color=0):
         outputArray=getLastTwoDimArray(outputArray[dimLoad[0]],dimLoad[1:],color=color)
     return outputArray
 def getFramePts(pts,dimLoad):
-    newPts=np.copy(pts)
+    newPts=np.array(pts)
     for n in range(len(dimLoad)-2):
         if len(newPts)!=0:
             filterFrame=(newPts[:,n]==dimLoad[n])
@@ -65,7 +69,7 @@ def dimToTitle(dimension,showIndex):
 Main GUI class
 '''
 class image2DGUI:
-    def __init__(self,imageClass,addInstruct='',disable=[],initPointList=None,showNow=True):
+    def __init__(self,imageClass,addInstruct='',disable=[],initPointList=None,initLineList=None,manualToleranceRatio=0.05,showNow=True):
         self.title=None
         self.addInstruct=STD_INSTRUCTIONS
         if addInstruct!='':
@@ -89,15 +93,22 @@ class image2DGUI:
         for n in range(len(self.image.data.shape)-self.color):
             self.showIndex.append(0)
         self.disable=disable
+        self.sliderLoc=0.02
         self.connectionID=[]
-        if 'click' not in self.disable:
+        if 'click' not in self.disable or 'line' not in self.disable:
             self.connectionID.append(self.fig.canvas.mpl_connect('button_press_event', self.onclick))
+        if 'line' not in self.disable:
+            self.sliderLoc+=0.06
+            self.connectionID.append(self.fig.canvas.mpl_connect('button_release_event', self.onrelease))
+            self.connectionID.append(self.fig.canvas.mpl_connect('motion_notify_event', self.onmotion))
+            
         self.connectionID.append(self.fig.canvas.mpl_connect('key_press_event',self.onKeypress))   
         self.enter=False
         self.scaleVisual=1.
         self.logVisual=0.
-        
-        
+        self.line_selected=-1
+        self.point_selected=-1
+        self.show_line=False
         '''
         Return parameters
         '''
@@ -110,10 +121,19 @@ class image2DGUI:
                 for m in range(len(initPointList[n])-2):
                     initPointList[n,m]=np.round(initPointList[n,m])
             self.points=initPointList
+            
+        
+        self.lineplt=[]
+        self.lines=[]
+        if initLineList is not None:
+            for line in initLineList:
+                self.lines.append(line.copy())
+                
         self.axslide=[]
         self.sSlide=[]
         self.loadImageFrame()
-
+        self.manualToleranceRatio=manualToleranceRatio
+        self.manualTolerance=(min(*self.image.data.shape[-2:])*self.manualToleranceRatio)**2.
         if showNow:
             plt.show()
     def sliderUpdate(self,val):
@@ -122,11 +142,78 @@ class image2DGUI:
         self.scaleVisual=self.sSlide[-2].val
         self.logVisual=self.sSlide[-1].val
         self.showNewFrame()
+    def getLineIndex(self,y,x):
+        chosen=None
+        distance=float('inf')
+        if self.line_selected<0:
+            for nline in range(len(self.lines)):
+                points=getFramePts(self.lines[nline],self.showIndex)
+                if len(points)>0:
+                    distance_temp=np.min(np.sum((points[:,-2:]-np.array([[y,x]]))**2.,axis=1))
+                    if distance_temp<distance:
+                        distance=distance_temp
+                        chosen=nline
+        elif len(self.lines[self.line_selected])>0:
+            points=getFramePts(self.lines[self.line_selected],self.showIndex)
+            distance=np.sum((points[:,-2:]-np.array([[y,x]]))**2.,axis=1)
+            chosen=np.argmin(distance)
+        return (chosen,distance)
     def onclick(self,event):
         if not(event.dblclick) and event.button==1 and event.inaxes==self.ax:
             newPt=np.array([*self.showIndex[:-2],event.ydata,event.xdata])
-            self.points=np.vstack((self.points,newPt))
-        self.showNewPoints()
+            if 'click' not in self.disable:
+                self.points=np.vstack((self.points,newPt))
+            self.showNewPoints()
+            if self.show_line:
+                lineIndex,distance=self.getLineIndex(event.ydata,event.xdata)
+                if self.line_selected>=0:
+                    addlinept=len(self.lines[self.line_selected])
+                    if lineIndex is not None:
+                        if distance.min() < self.manualTolerance:
+                            self.point_selected=lineIndex
+                            addlinept=None
+                        elif addlinept>1:
+                            detectline=getFramePts(self.lines[self.line_selected],self.showIndex)
+                            tck,temp = interpolate.splprep([detectline[:,-1], detectline[:,-2]], s=0,k=min(4,len(detectline))-1)
+                            cspline_detectline = np.array(interpolate.splev(np.arange(0, 1.+1./100./(addlinept-1), 1./100./(addlinept-1)), tck)).T
+                            detectdistance=np.sum((cspline_detectline-np.array([[event.xdata,event.ydata]]))**2.,axis=1)
+                            if detectdistance.min()<self.manualTolerance:
+                                splineIndex=detectdistance.argmin()
+                                for npoint in range(1,addlinept):
+                                    if splineIndex<np.argmin(np.sum((cspline_detectline-np.array([[self.lines[self.line_selected][npoint][-1],self.lines[self.line_selected][npoint][-2]]]))**2.,axis=1)):
+                                        addlinept=npoint
+                                        break
+                    if addlinept is not None:
+                        self.point_selected=-1
+                        self.lines[self.line_selected].insert(addlinept,newPt)
+                    self.showNewLine(self.line_selected)
+                elif lineIndex is not None:
+                    if self.line_selected==-1:
+                        self.line_selected=lineIndex
+                        self.showNewLine(lineIndex)
+                    elif self.line_selected==-2:
+                        self.lines.pop(lineIndex)
+                        self.line_selected=-1
+                        self.loadImageFrame()
+                    
+    def onrelease(self,event):
+        self.point_selected=-1
+        if self.line_selected>=0:
+            self.showNewLine(self.line_selected)
+        return
+    def onmotion(self,event):
+        if self.line_selected<0 or self.point_selected<0:
+            return
+        if event.xdata is None or event.ydata is None:
+            if self.line_selected>=0 and self.point_selected>=0:
+                self.lines[self.line_selected].pop(self.point_selected)
+                self.point_selected=-1
+                self.showNewLine(self.line_selected)
+            return
+        newPt=np.array([*self.showIndex[:-2],event.ydata,event.xdata])
+        self.lines[self.line_selected][self.point_selected]=newPt.copy()
+        self.showNewLine(self.line_selected)
+        return
     def onKeypress(self,event):
         if event.key == 'escape':#return values and quit
             for connection in self.connectionID:
@@ -160,8 +247,27 @@ class image2DGUI:
             self.swapFrame(event.key)
         else:
             logger.info(event.key)
-
+    def togger_line(self,event):
+        self.show_line=not(self.show_line)
+        if not(self.show_line):
+            self.line_selected=-1
+        self.loadImageFrame()
+    def new_line(self,event):
+        self.show_line=True
+        if len(self.lineplt)>self.line_selected and self.line_selected>=0:
+            if len(self.lineplt[self.line_selected])>1:
+                self.lineplt[self.line_selected][1][0].set_color('b')
+        self.line_selected=len(self.lines)
+        self.lines.append([])
+    def edit_line(self,event):
+        if len(self.lineplt)>self.line_selected:
+            if len(self.lineplt[self.line_selected])>1:
+                self.lineplt[self.line_selected][1][0].set_color('b')
+        self.line_selected=-1
+    def del_line(self,event):
+        self.line_selected=-2
     def switchFrame(self,index,val=1):
+        self.line_selected=-1
         if len(self.showIndex)>=(-index):
             self.showIndex[index]+=val
             if self.showIndex[index]>(self.image.data.shape[index]-1):
@@ -169,8 +275,12 @@ class image2DGUI:
             elif self.showIndex[index]<0:
                 self.showIndex[index]=self.image.data.shape[index]-1
             self.sSlide[len(self.showIndex)+index].set_val(self.showIndex[index])
-        self.showNewFrame()
+        if self.show_line:
+            self.loadImageFrame()
+        else:
+            self.showNewFrame()
     def swapFrame(self,axis):
+        self.line_selected=-1
         if 'swap' not in self.disable:
             if self.color:
                 transposeIndex=self.image.rearrangeDim([axis,self.image.dim[-1]],arrangeFront=False)
@@ -183,7 +293,9 @@ class image2DGUI:
                 newShowIndex.append(self.showIndex[transposeIndex[n]])
             self.showIndex=newShowIndex
             self.points=self.points[:,transposeIndex]
-            plt.clf()
+            for nline in range(len(self.lines)):
+                self.lines[nline]=self.lines[nline][:,transposeIndex]
+            self.manualTolerance=(min(*self.image.data.shape[-2:])*self.manualToleranceRatio)**2.
             self.loadImageFrame()
             self.showNewFrame()
     def showNewFrame(self):
@@ -202,8 +314,43 @@ class image2DGUI:
         showpoints=getFramePts(self.points,self.showIndex)
         self.ptplt.set_offsets(showpoints[:,[-1,-2]])
         self.fig.canvas.draw()
-        
+    def showNewLine(self,lineIndex):
+        temp_color='b'
+        if lineIndex==self.line_selected:
+            temp_color='r'
+        showline=getFramePts(self.lines[lineIndex],self.showIndex)
+        if len(showline)>0:
+            if len(self.lineplt)<=lineIndex:
+                self.loadImageFrame()
+                return;
+            elif type(self.lineplt[lineIndex])!=list:
+                self.loadImageFrame()
+                return;
+            self.lineplt[lineIndex][0].set_offsets(showline[:,[-1,-2]])
+            if len(showline)>1:
+                tck,temp = interpolate.splprep([showline[:,-1], showline[:,-2]], s=0,k=min(4,len(showline))-1)
+                cspline_line = interpolate.splev(np.arange(0, 1.01, 0.01), tck)
+                self.lineplt[lineIndex][1][0].set_xdata(cspline_line[0])
+                self.lineplt[lineIndex][1][0].set_ydata(cspline_line[1])
+                self.lineplt[lineIndex][1][0].set_color(temp_color)
+                #self.lineplt[lineIndex][1].set_offsets(np.array(cspline_line[0],cspline_line[1]).T)
+            else:
+                self.lineplt[lineIndex][1][0].set_xdata(np.array([showline[0,-1],showline[0,-1]]))
+                self.lineplt[lineIndex][1][0].set_ydata(np.array([showline[0,-2],showline[0,-2]]))
+                self.lineplt[lineIndex][1][0].set_color(temp_color)
+                #self.lineplt[lineIndex][1].set_offsets(np.array([showline[0,[-1,-2]],showline[0,[-1,-2]]]))
+            if self.line_selected>=0 and self.point_selected>=0:
+                if type(self.lineplt[-1])==list:
+                    self.lineplt.append(self.ax.scatter([self.lines[self.line_selected][self.point_selected][-1]],[self.lines[self.line_selected][self.point_selected][-2]],color='r',marker='x'))
+                else:
+                    self.lineplt[-1].set_offsets([self.lines[self.line_selected][self.point_selected][-1],self.lines[self.line_selected][self.point_selected][-2]])
+                    self.lineplt[-1].set_visible(True)
+            else:
+                if type(self.lineplt[-1])!=list:
+                    self.lineplt[-1].set_visible(False)
+        self.fig.canvas.draw()
     def loadImageFrame(self):
+        plt.clf()
         self.ax = self.fig.add_subplot(111)
         self.fig.subplots_adjust(bottom=(len(self.showIndex)+3)*0.04)
         showImage=getLastTwoDimArray(self.image.data,self.showIndex,color=self.color)
@@ -215,23 +362,52 @@ class image2DGUI:
 
         showpoints=getFramePts(self.points,self.showIndex)
         self.ptplt=self.ax.scatter(showpoints[:,-1],showpoints[:,-2],color='r',marker='x')
-
+        if self.show_line:
+            self.lineplt=[]
+            for nline in range(len(self.lines)):
+                temp_color='b'
+                if nline==self.line_selected:
+                    temp_color='r'
+                showline=getFramePts(self.lines[nline],self.showIndex)
+                if len(showline)>0:
+                    self.lineplt.append([self.ax.scatter(showline[:,-1],showline[:,-2],color='b',marker='x')])
+                    if len(showline)>1:
+                        tck,temp = interpolate.splprep([showline[:,-1], showline[:,-2]], s=0,k=min(4,len(showline))-1)
+                        cspline_line = interpolate.splev(np.arange(0, 1.01, 0.01), tck)
+                        self.lineplt[-1].append(self.ax.plot(cspline_line[0].copy(),cspline_line[1].copy(),color=temp_color))
+                    else:
+                        self.lineplt[-1].append(self.ax.plot([showline[0,-1],showline[0,-1]],[showline[0,-2],showline[0,-2]],color=temp_color))
+            if self.line_selected>=0 and self.point_selected>=0:
+                
+                self.lineplt.append(self.ax.scatter([self.lines[self.line_selected][self.point_selected][-1]],[self.lines[self.line_selected][self.point_selected][-2]],color='r',marker='x'))
         self.title=plt.title(self.addInstruct+dimToTitle(self.image.dim[:-2-self.color],self.showIndex[:-2]))
         plt.ylabel(self.image.dim[-2-self.color])
         plt.xlabel(self.image.dim[-1-self.color])
 
         '''set slider for image control'''
         axcolor = 'lightgoldenrodyellow'
+
+        self.lineControl=[]
+        if 'line' not in self.disable:
+            self.lineControl.append(Button(self.fig.add_axes([0.05, 0.02, 0.1, 0.05]), 'Line'))
+            self.lineControl[0].on_clicked(self.togger_line)
+            self.lineControl.append(Button(self.fig.add_axes([0.2, 0.02, 0.1, 0.05]), 'new'))
+            self.lineControl[1].on_clicked(self.new_line)
+            self.lineControl.append(Button(self.fig.add_axes([0.35, 0.02, 0.1, 0.05]), 'edit...'))
+            self.lineControl[2].on_clicked(self.edit_line)
+            self.lineControl.append(Button(self.fig.add_axes([0.5, 0.02, 0.1, 0.05]), 'del...'))
+            self.lineControl[3].on_clicked(self.del_line)
+            
         self.axslide=[]
         self.sSlide=[]
         for n in range(len(self.showIndex)-2):
-            self.axslide.append(self.fig.add_axes([0.1, 0.02+n*0.04, 0.65, 0.03], facecolor=axcolor))
+            self.axslide.append(self.fig.add_axes([0.1, self.sliderLoc+n*0.04, 0.65, 0.03], facecolor=axcolor))
             self.sSlide.append(Slider(self.axslide[-1], self.image.dim[n], 0, self.image.data.shape[n]-1, valinit=self.showIndex[n],valfmt="%i"))
             self.sSlide[-1].on_changed(self.sliderUpdate)
-        self.axslide.append(self.fig.add_axes([0.1, 0.02+(len(self.showIndex)-2)*0.04, 0.65, 0.03], facecolor=axcolor))
+        self.axslide.append(self.fig.add_axes([0.1, self.sliderLoc+(len(self.showIndex)-2)*0.04, 0.65, 0.03], facecolor=axcolor))
         self.sSlide.append(Slider(self.axslide[-1], 'Iscale', 0.1, 10., valinit=self.scaleVisual,valstep=0.1))
         self.sSlide[-1].on_changed(self.sliderUpdate)
-        self.axslide.append(self.fig.add_axes([0.1, 0.02+(len(self.showIndex)-1)*0.04, 0.65, 0.03], facecolor=axcolor))
+        self.axslide.append(self.fig.add_axes([0.1, self.sliderLoc+(len(self.showIndex)-1)*0.04, 0.65, 0.03], facecolor=axcolor))
         self.sSlide.append(Slider(self.axslide[-1], 'logPOW', -1., 1., valinit=self.logVisual,valstep=0.02))
         self.sSlide[-1].on_changed(self.sliderUpdate)
         

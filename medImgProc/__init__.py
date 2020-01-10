@@ -148,7 +148,7 @@ import image
 '''
 External Functions
 '''
-def imread(imageFile,dimension=None,fileFormat='',crop=None,module=''):
+def imread(imageFile,dimension=None,fileFormat='',crop=None,module='medpy'):
     newImage=image.image(imageFile,dimension=dimension,fileFormat=fileFormat,crop=crop,module=module)
     return newImage
 def imwrite(imageClass,filePath,axes=['y','x'],imageFormat='png',dimRange={},fps=3,color=0):

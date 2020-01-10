@@ -11,7 +11,7 @@ Author: w.x.chan@gmail.com           08OCT2019           - v1.4.0
 Author: w.x.chan@gmail.com           08OCT2019           - v1.5.2
                                                               -added Intensity scaling
                                                               - lower slider
-Author: w.x.chan@gmail.com           10Jan2020           - v2.3.6
+Author: w.x.chan@gmail.com           10Jan2020           - v2.3.7
                                                               -added cubic spline line drawing
                                                               -removed latex dependency
                                                               -debug function show() in image2DGUI
@@ -24,7 +24,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.3.6'
+_version='2.3.7'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -141,6 +141,7 @@ class image2DGUI:
         if showNow:
             plt.show()
     def sliderUpdate(self,val):
+        self.line_selected=-1
         for n in range(len(self.showIndex)-2):
             self.showIndex[n]=int(self.sSlide[n].val)
         self.scaleVisual=self.sSlide[-2].val

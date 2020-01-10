@@ -14,6 +14,7 @@ Author: w.x.chan@gmail.com           08OCT2019           - v1.5.2
 Author: w.x.chan@gmail.com           10Jan2020           - v2.3.4
                                                               -added cubic spline line drawing
                                                               -removed latex dependency
+                                                              -debug function show() in image2DGUI
 Requirements:
     numpy.py
     matplotlib.py

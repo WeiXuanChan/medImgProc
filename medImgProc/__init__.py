@@ -108,7 +108,7 @@ History:
                                                             -processFunc v2.2.8
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         10JAN2020           - v2.3.1
+  Author: w.x.chan@gmail.com         10JAN2020           - v2.3.2
                                                             -processFunc v2.2.8
                                                             -Image v1.8.0
                                                             -GUI v2.3.1
@@ -124,7 +124,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.3.1'
+_version='2.3.2'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 
@@ -134,7 +134,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import matplotlib
-if os.environ.get('DISPLAY','')=='':
+if os.environ.get('DISPLAY','')=='' and os.name!='nt':
     logger.warning('no display found. Using non-interactive Agg backend')
     matplotlib.use('Agg')
 import pickle

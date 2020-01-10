@@ -11,7 +11,7 @@ Author: w.x.chan@gmail.com           08OCT2019           - v1.4.0
 Author: w.x.chan@gmail.com           08OCT2019           - v1.5.2
                                                               -added Intensity scaling
                                                               - lower slider
-Author: w.x.chan@gmail.com           10Jan2020           - v2.3.1
+Author: w.x.chan@gmail.com           10Jan2020           - v2.3.4
                                                               -added cubic spline line drawing
                                                               -removed latex dependency
 Requirements:
@@ -23,7 +23,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.3.0'
+_version='2.3.4'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -152,7 +152,9 @@ class image2DGUI:
             for nline in range(len(self.lines)):
                 points=getFramePts(self.lines[nline],self.showIndex)
                 if len(points)>0:
-                    distance_temp=np.min(np.sum((points[:,-2:]-np.array([[y,x]]))**2.,axis=1))
+                    tck,temp = interpolate.splprep([points[:,-1], points[:,-2]], s=0,k=min(4,len(points))-1)
+                    cspline_detectline = np.array(interpolate.splev(np.arange(0, 1.01, 0.01), tck)).T
+                    distance_temp=np.min(np.sum((cspline_detectline-np.array([[x,y]]))**2.,axis=1))
                     if distance_temp<distance:
                         distance=distance_temp
                         chosen=nline
@@ -418,5 +420,17 @@ class image2DGUI:
         self.points=self.points[:-1,:]
         self.showNewPoints()
     def show(self):
+        self.fig=plt.figure(1)
+        self.sliderLoc=0.02
+        self.connectionID=[]
+        if 'click' not in self.disable or 'line' not in self.disable:
+            self.connectionID.append(self.fig.canvas.mpl_connect('button_press_event', self.onclick))
+        if 'line' not in self.disable:
+            self.sliderLoc+=0.06
+            self.connectionID.append(self.fig.canvas.mpl_connect('button_release_event', self.onrelease))
+            self.connectionID.append(self.fig.canvas.mpl_connect('motion_notify_event', self.onmotion))
+            
+        self.connectionID.append(self.fig.canvas.mpl_connect('key_press_event',self.onKeypress))   
+        self.enter=False
         self.loadImageFrame()
         plt.show()

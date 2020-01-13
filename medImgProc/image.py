@@ -695,7 +695,7 @@ class image:
             maxI=self.data.max()
         self.data=np.clip(self.data, minI-shift, maxI-shift)
         self.data=self.data+shift
-    def imread(self,imageFile,dimension=None,fileFormat='',dimlen={},module='medpy'):
+    def imread(self,imageFile,dimension=None,fileFormat='',dimlen={},module=''):
         '''
         Identify input file as Image
         '''

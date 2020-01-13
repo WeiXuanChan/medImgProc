@@ -11,7 +11,7 @@ Author: w.x.chan@gmail.com           08OCT2019           - v1.4.0
 Author: w.x.chan@gmail.com           08OCT2019           - v1.5.2
                                                               -added Intensity scaling
                                                               - lower slider
-Author: w.x.chan@gmail.com           10Jan2020           - v2.3.8
+Author: w.x.chan@gmail.com           10Jan2020           - v2.3.9
                                                               -added cubic spline line drawing
                                                               -removed latex dependency
                                                               -debug function show() in image2DGUI
@@ -24,7 +24,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.3.8'
+_version='2.3.9'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -147,16 +147,24 @@ class image2DGUI:
         self.scaleVisual=self.sSlide[-2].val
         self.logVisual=self.sSlide[-1].val
         self.showNewFrame()
+        if self.show_line:
+            for nline in range(len(self.lines)):
+                self.showNewLine(nline)
     def getLineIndex(self,y,x):
         chosen=None
         distance=float('inf')
         if self.line_selected<0:
             for nline in range(len(self.lines)):
                 points=getFramePts(self.lines[nline],self.showIndex)
-                if len(points)>0:
+                if len(points)>1:
                     tck,temp = interpolate.splprep([points[:,-1], points[:,-2]], s=0,k=min(4,len(points))-1)
                     cspline_detectline = np.array(interpolate.splev(np.arange(0, 1.01, 0.01), tck)).T
                     distance_temp=np.min(np.sum((cspline_detectline-np.array([[x,y]]))**2.,axis=1))
+                    if distance_temp<distance:
+                        distance=distance_temp
+                        chosen=nline
+                elif len(points)==1:
+                    distance_temp=np.min(np.sum((np.array([points[:,-1], points[:,-2]])-np.array([[x,y]]))**2.,axis=1))
                     if distance_temp<distance:
                         distance=distance_temp
                         chosen=nline
@@ -170,7 +178,7 @@ class image2DGUI:
             newPt=np.array([*self.showIndex[:-2],event.ydata,event.xdata])
             if 'click' not in self.disable:
                 self.points=np.vstack((self.points,newPt))
-            self.showNewPoints()
+                self.showNewPoints()
             if self.show_line:
                 lineIndex,distance=self.getLineIndex(event.ydata,event.xdata)
                 if self.line_selected>=0:
@@ -206,7 +214,8 @@ class image2DGUI:
     def onrelease(self,event):
         self.point_selected=-1
         if self.line_selected>=0:
-            self.showNewLine(self.line_selected)
+            if len(self.lines[self.line_selected])>0:
+                self.showNewLine(self.line_selected)
         return
     def onmotion(self,event):
         if self.line_selected<0 or self.point_selected<0:
@@ -215,7 +224,12 @@ class image2DGUI:
             if self.line_selected>=0 and self.point_selected>=0:
                 self.lines[self.line_selected].pop(self.point_selected)
                 self.point_selected=-1
-                self.showNewLine(self.line_selected)
+                if len(self.lines[self.line_selected])>0:
+                   self.showNewLine(self.line_selected)
+                else:
+                   self.lines.pop(self.line_selected)
+                   self.line_selected=-1
+                   self.loadImageFrame()
             return
         newPt=np.array([*self.showIndex[:-2],event.ydata,event.xdata])
         self.lines[self.line_selected][self.point_selected]=newPt.copy()
@@ -263,13 +277,13 @@ class image2DGUI:
         self.show_line=True
         if len(self.lineplt)>self.line_selected and self.line_selected>=0:
             if len(self.lineplt[self.line_selected])>1:
-                self.lineplt[self.line_selected][1][0].set_color('b')
+                self.lineplt[self.line_selected][1].set_color('b')
         self.line_selected=len(self.lines)
         self.lines.append([])
     def edit_line(self,event):
         if len(self.lineplt)>self.line_selected:
             if len(self.lineplt[self.line_selected])>1:
-                self.lineplt[self.line_selected][1][0].set_color('b')
+                self.lineplt[self.line_selected][1].set_color('b')
         self.line_selected=-1
     def del_line(self,event):
         self.line_selected=-2
@@ -326,7 +340,10 @@ class image2DGUI:
         if lineIndex==self.line_selected:
             temp_color='r'
         showline=getFramePts(self.lines[lineIndex],self.showIndex)
-        if len(showline)>0:
+        if len(showline)<=0:
+            self.lineplt[lineIndex][0].set_visible(False)
+            self.lineplt[lineIndex][1].set_visible(False)
+        else:
             if len(self.lineplt)<=lineIndex:
                 self.loadImageFrame()
                 return;
@@ -334,17 +351,21 @@ class image2DGUI:
                 self.loadImageFrame()
                 return;
             self.lineplt[lineIndex][0].set_offsets(showline[:,[-1,-2]])
+            self.lineplt[lineIndex][0].set_visible(True)
+            self.lineplt[lineIndex][1].set_visible(True)
             if len(showline)>1:
+                self.lineplt[lineIndex][0].set_color('b')
                 tck,temp = interpolate.splprep([showline[:,-1], showline[:,-2]], s=0,k=min(4,len(showline))-1)
                 cspline_line = interpolate.splev(np.arange(0, 1.01, 0.01), tck)
-                self.lineplt[lineIndex][1][0].set_xdata(cspline_line[0])
-                self.lineplt[lineIndex][1][0].set_ydata(cspline_line[1])
-                self.lineplt[lineIndex][1][0].set_color(temp_color)
+                self.lineplt[lineIndex][1].set_xdata(cspline_line[0])
+                self.lineplt[lineIndex][1].set_ydata(cspline_line[1])
+                self.lineplt[lineIndex][1].set_color(temp_color)
                 #self.lineplt[lineIndex][1].set_offsets(np.array(cspline_line[0],cspline_line[1]).T)
             else:
-                self.lineplt[lineIndex][1][0].set_xdata(np.array([showline[0,-1],showline[0,-1]]))
-                self.lineplt[lineIndex][1][0].set_ydata(np.array([showline[0,-2],showline[0,-2]]))
-                self.lineplt[lineIndex][1][0].set_color(temp_color)
+                self.lineplt[lineIndex][0].set_color('r')
+                self.lineplt[lineIndex][1].set_xdata(np.array([showline[0,-1],showline[0,-1]]))
+                self.lineplt[lineIndex][1].set_ydata(np.array([showline[0,-2],showline[0,-2]]))
+                self.lineplt[lineIndex][1].set_color(temp_color)
                 #self.lineplt[lineIndex][1].set_offsets(np.array([showline[0,[-1,-2]],showline[0,[-1,-2]]]))
             if self.line_selected>=0 and self.point_selected>=0:
                 if type(self.lineplt[-1])==list:
@@ -375,17 +396,20 @@ class image2DGUI:
                 temp_color='b'
                 if nline==self.line_selected:
                     temp_color='r'
-                showline=getFramePts(self.lines[nline],self.showIndex)
-                if len(showline)>0:
-                    self.lineplt.append([self.ax.scatter(showline[:,-1],showline[:,-2],color='b',marker='x')])
-                    if len(showline)>1:
-                        tck,temp = interpolate.splprep([showline[:,-1], showline[:,-2]], s=0,k=min(4,len(showline))-1)
+                if len(self.lines[nline])>0:
+                    self.lineplt.append([self.ax.scatter(np.array(self.lines[nline])[:,-1],np.array(self.lines[nline])[:,-2],color='b',marker='x')])
+                    if len(self.lines[nline])>1:
+                        tck,temp = interpolate.splprep([np.array(self.lines[nline])[:,-1], np.array(self.lines[nline])[:,-2]], s=0,k=min(4,len(self.lines[nline]))-1)
                         cspline_line = interpolate.splev(np.arange(0, 1.01, 0.01), tck)
-                        self.lineplt[-1].append(self.ax.plot(cspline_line[0].copy(),cspline_line[1].copy(),color=temp_color))
+                        self.lineplt[-1]+=self.ax.plot(cspline_line[0].copy(),cspline_line[1].copy(),color=temp_color)
                     else:
-                        self.lineplt[-1].append(self.ax.plot([showline[0,-1],showline[0,-1]],[showline[0,-2],showline[0,-2]],color=temp_color))
+                        self.lineplt[-1]+=self.ax.plot([self.lines[nline][0][-1],self.lines[nline][0][-1]],[self.lines[nline][0][-2],self.lines[nline][0][-2]],color=temp_color)
+                        self.lineplt[-1][0].set_color('r')
+                    if len(self.showIndex)>2:
+                        if np.any(self.lines[nline][0][:(len(self.showIndex)-2)]!=self.showIndex[:-2]):
+                            self.lineplt[-1][0].set_visible(False)
+                            self.lineplt[-1][1].set_visible(False)
             if self.line_selected>=0 and self.point_selected>=0:
-                
                 self.lineplt.append(self.ax.scatter([self.lines[self.line_selected][self.point_selected][-1]],[self.lines[self.line_selected][self.point_selected][-2]],color='r',marker='x'))
         self.title=plt.title(self.addInstruct+dimToTitle(self.image.dim[:-2-self.color],self.showIndex[:-2]))
         plt.ylabel(self.image.dim[-2-self.color])

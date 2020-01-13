@@ -15,6 +15,8 @@ Author: w.x.chan@gmail.com           10Jan2020           - v2.3.9
                                                               -added cubic spline line drawing
                                                               -removed latex dependency
                                                               -debug function show() in image2DGUI
+Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
+                                                              -debug keypress switch frame of rgb image
 Requirements:
     numpy.py
     matplotlib.py
@@ -24,7 +26,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.3.9'
+_version='2.3.10'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -291,10 +293,10 @@ class image2DGUI:
         self.line_selected=-1
         if len(self.showIndex)>=(-index):
             self.showIndex[index]+=val
-            if self.showIndex[index]>(self.image.data.shape[index]-1):
+            if self.showIndex[index]>(self.image.data.shape[len(self.showIndex)+index]-1):
                 self.showIndex[index]=0
             elif self.showIndex[index]<0:
-                self.showIndex[index]=self.image.data.shape[index]-1
+                self.showIndex[index]=self.image.data.shape[len(self.showIndex)+index]-1
             self.sSlide[len(self.showIndex)+index].set_val(self.showIndex[index])
         if self.show_line:
             self.loadImageFrame()

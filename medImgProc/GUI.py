@@ -59,12 +59,14 @@ def getFramePts(pts,dimLoad):
     return newPts
 def dimToTitle(dimension,showIndex):
     titleOutput=''
-    for n in range(len(dimension)):
+    for n in range(-1,-len(dimension)-1,-1):
         titleOutput+=dimension[n]+':'+str(showIndex[n])
-        if n==0:
-            titleOutput+='<>   '#r'$\leftrightarrow$ \hspace{1cm} '
+        if n==-1:
+            titleOutput+='^v   '  #r'$\updownarrow$'
+            
         else:
-            titleOutput+='^v'#r'$\updownarrow$'
+            titleOutput+='<>'#r'$\leftrightarrow$ \hspace{1cm} '
+            break
     #titleOutput+='\n '+r'$\leftarrow$ $\rightarrow$ \hspace{1cm} $\uparrow$ $\downarrow$'
     
     return titleOutput

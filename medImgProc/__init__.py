@@ -108,7 +108,7 @@ History:
                                                             -processFunc v2.2.8
                                                             -Image v1.8.0
                                                             -GUI v1.5.2
-  Author: w.x.chan@gmail.com         10JAN2020           - v2.3.10
+  Author: w.x.chan@gmail.com         10JAN2020           - v2.3.11
                                                             -processFunc v2.2.8
                                                             -Image v1.8.0
                                                             -GUI v2.3.10
@@ -124,7 +124,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.3.10'
+_version='2.3.11'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 
@@ -148,7 +148,7 @@ import image
 '''
 External Functions
 '''
-def imread(imageFile,dimension=None,fileFormat='',crop=None,module='medpy'):
+def imread(imageFile,dimension=None,fileFormat='',crop=None,module=''):
     newImage=image.image(imageFile,dimension=dimension,fileFormat=fileFormat,crop=crop,module=module)
     return newImage
 def imwrite(imageClass,filePath,axes=['y','x'],imageFormat='png',dimRange={},fps=3,color=0):
@@ -177,13 +177,18 @@ def load(filePath):
     with open(filePath, 'rb') as input:
         outObj = pickle.load(input)
     return outObj
-def loadStack(imageFileFormat,dimension=None,maxskip=0):
-    newImage=load(imageFileFormat.format(0))
-    n=1
+def loadStack(imageFileFormat,dimension=None,n=0,maxskip=0):
+    try:
+        newImage=load(imageFileFormat.format(n))
+        getFunc=load
+    except:
+        newImage=imread(imageFileFormat.format(n))
+        getFunc=imread
+    n+=1
     skip=0
     while True:
         try:
-            newImage.data=np.concatenate((newImage.data,load(imageFileFormat.format(n)).data),axis=0)
+            newImage.data=np.concatenate((newImage.data,getFunc(imageFileFormat.format(n)).data),axis=0)
             skip=0
         except:
             skip+=1

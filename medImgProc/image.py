@@ -24,6 +24,10 @@ History:
                                                               -in imwrite2D, revised dimRange default to None to prevent consecutive use error
   Author: w.x.chan@gmail.com         11NOV2019           - v1.8.0
                                                             -added scipy interp1d to stretchDim
+  Author: w.x.chan@gmail.com         15JAN2020           - v2.3.12
+                                                            -return gui to function image.show()
+                                                            -return exception from imageio when error reading file
+                                                            
   
 Requirements:
     numpy.py
@@ -34,7 +38,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='1.8.0'
+_version='2.3.12'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -699,11 +703,12 @@ class image:
         '''
         Identify input file as Image
         '''
+        err_msg=''
         if module=='medpy':
             try:
                 img, img_header = medpy.io.load(os.path.normpath(imageFile))
-            except:
-                pass
+            except Exception as e:
+                err_msg+='medpy.io.load:'+str(e)+'\n'
             else:
                 dim=len(img.shape)
                 self.data=np.array(img)
@@ -722,8 +727,8 @@ class image:
                 return
         try:
             img=imageio.imread(os.path.normpath(imageFile))
-        except:
-            pass
+        except Exception as e:
+                err_msg+='imageio.imread:'+str(e)+'\n'
         else:
             dim=len(img.shape)
             if dimension is None:
@@ -747,8 +752,8 @@ class image:
                 img=imageio.volread(os.path.normpath(imageFile))
             else:
                 img=imageio.volread(os.path.normpath(imageFile),fileFormat)
-        except:
-            pass
+        except Exception as e:
+                err_msg+='imageio.volread:'+str(e)+'\n'
         else:
             dim=len(img.shape)
             if dimension is None:
@@ -767,8 +772,8 @@ class image:
         ''' 
         try:
             img=imageio.get_reader(os.path.normpath(imageFile))
-        except:
-            pass
+        except Exception as e:
+                err_msg+='imageio.get_reader:'+str(e)+'\n'
         else:
             frames=img.get_meta_data()['nframes']
             if dimension is None:
@@ -793,16 +798,19 @@ class image:
                     self.data[countFrame]=np.array(vid_frame)
                     countFrame+=1
                 return
-        raise Exception('Error reading file')
+        raise Exception('Error reading file\n'+err_msg)
         return
     
     '''
 
     graphical user interface
     '''
-    def show(self,tag='2D'):
+    def show(self,tag='2D',**kwarg):
+        if 'disable' not in kwarg:
+            kwarg['disable']=['click']
         if tag=='2D':
-            GUI.image2DGUI(self,disable=['click'])
+            gui=GUI.image2DGUI(self,**kwarg)
+            return gui
     def readPoints(self,disable=['swap'],addInstruct=''):
         result=GUI.image2DGUI(self,disable=disable,addInstruct=addInstruct)
         transposeIndex,currentDim=arrangeDim(result.image.dim,self.dim,True)

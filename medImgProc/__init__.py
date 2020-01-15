@@ -112,6 +112,11 @@ History:
                                                             -processFunc v2.2.8
                                                             -Image v1.8.0
                                                             -GUI v2.3.10
+  Author: w.x.chan@gmail.com         15JAN2020           - v2.3.12
+                                                            -allow loadStack to add new dimension and stack at different axis
+                                                            -processFunc v2.2.8
+                                                            -Image v2.3.12
+                                                            -GUI v2.3.10
 
 
 Requirements:
@@ -124,7 +129,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.3.11'
+_version='2.3.12'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 
@@ -184,6 +189,15 @@ def loadStack(imageFileFormat,dimension=None,n=0,maxskip=0):
     except:
         newImage=imread(imageFileFormat.format(n))
         getFunc=imread
+    if type(dimension)==type(None):
+        stackaxis=0
+    elif isinstance(dimension,int):
+        stackaxis=dimension
+    elif dimension in newImage.dim:
+        stackaxis=newImage.dim.index(dimension)
+    else:
+        newImage.addDim(dimension)
+        stackaxis=0
     n+=1
     skip=0
     while True:

@@ -112,10 +112,10 @@ History:
                                                             -processFunc v2.2.8
                                                             -Image v1.8.0
                                                             -GUI v2.3.10
-  Author: w.x.chan@gmail.com         15JAN2020           - v2.3.12
+  Author: w.x.chan@gmail.com         15JAN2020           - v2.3.13
                                                             -allow loadStack to add new dimension and stack at different axis
                                                             -processFunc v2.2.8
-                                                            -Image v2.3.12
+                                                            -Image v2.3.13
                                                             -GUI v2.3.10
 
 
@@ -129,7 +129,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.3.12'
+_version='2.3.13'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 

@@ -781,7 +781,6 @@ class image:
             for vid_frame in img: #access frame dimension and dtype
                 frameShape=vid_frame.shape
                 dim=len(frameShape)+1
-                
                 break
             if len(dimension)<dim:
                 self.dtype=None
@@ -790,7 +789,8 @@ class image:
             else:
                 self.dim=dimension[:dim]
                 self.dimlen=dimlen
-                self.dimlen[dimension[0]]=img.get_meta_data()['fps']
+                if isinstance(img.get_meta_data()['fps'],(int,float)):
+                    self.dimlen[dimension[0]]=1./img.get_meta_data()['fps']
                 self.setDefaultDimlen()
                 readData=[]
                 for vid_frame in img:

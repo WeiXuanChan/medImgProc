@@ -24,9 +24,10 @@ History:
                                                               -in imwrite2D, revised dimRange default to None to prevent consecutive use error
   Author: w.x.chan@gmail.com         11NOV2019           - v1.8.0
                                                             -added scipy interp1d to stretchDim
-  Author: w.x.chan@gmail.com         15JAN2020           - v2.3.12
+  Author: w.x.chan@gmail.com         15JAN2020           - v2.3.13
                                                             -return gui to function image.show()
                                                             -return exception from imageio when error reading file
+                                                            -debug when imageio.get_reader does not have 'nframes'
                                                             
   
 Requirements:
@@ -38,7 +39,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.3.12'
+_version='2.3.13'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -775,28 +776,27 @@ class image:
         except Exception as e:
                 err_msg+='imageio.get_reader:'+str(e)+'\n'
         else:
-            frames=img.get_meta_data()['nframes']
             if dimension is None:
                 dimension=list(DEFAULT_VID_DIMENSION)
             for vid_frame in img: #access frame dimension and dtype
                 frameShape=vid_frame.shape
                 dim=len(frameShape)+1
-                self.dtype=vid_frame.dtype
+                
                 break
             if len(dimension)<dim:
                 self.dtype=None
                 raise Exception('Error loading video file.'+HINT_DIMENSION_LIST)
                 return
             else:
-                self.data=np.zeros((frames,*frameShape),dtype=self.dtype)
                 self.dim=dimension[:dim]
                 self.dimlen=dimlen
                 self.dimlen[dimension[0]]=img.get_meta_data()['fps']
                 self.setDefaultDimlen()
-                countFrame=0
+                readData=[]
                 for vid_frame in img:
-                    self.data[countFrame]=np.array(vid_frame)
-                    countFrame+=1
+                    readData.append(np.array(vid_frame))
+                self.data=np.array(readData)
+                self.dtype=self.data.dtype
                 return
         raise Exception('Error reading file\n'+err_msg)
         return

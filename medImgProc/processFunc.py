@@ -47,6 +47,8 @@ History:
                                                               -in transform_img2img, edit not to savetxt of oripos
     Author: w.x.chan@gmail.com         02JAN2020           - v2.2.8
                                                               -in alignAxes_translate, add mask type tuple
+    Author: w.x.chan@gmail.com         02JAN2020           - v2.3.14
+                                                              -in translateArray, include interpolation order arguments
                                                               
 
 Requirements:
@@ -59,7 +61,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.2.8'
+_version='2.3.14'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -253,7 +255,7 @@ def calculate_correlation(imageAArray,imageBArray,maskArray):
     correl_val=np.sum((imageAArray-meanA)*(imageBArray-meanB)*maskArray)/stdA/stdB
     return correl_val
     
-def translateArray(oldArray,translateLastaxes,includeRotate,fill):
+def translateArray(oldArray,translateLastaxes,includeRotate,fill,order=3):
     trlen=len(translateLastaxes)
     if includeRotate:
         for n in range(trlen):
@@ -265,10 +267,10 @@ def translateArray(oldArray,translateLastaxes,includeRotate,fill):
     sanitized_translateIndex=[]
     for num in translateIndex:
         sanitized_translateIndex.append(int(np.around(num)))
-    newArray=shift(oldArray,sanitized_translateIndex,cval=fill)
+    newArray=shift(oldArray,sanitized_translateIndex,cval=fill,order=order)
     axis=[len(oldArray.shape)-1,len(oldArray.shape)-2]
     for n in range(trlen,len(translateLastaxes)):
-        newArray=rotate(newArray,translateLastaxes[n],axes=axis,cval=fill,reshape=False)
+        newArray=rotate(newArray,translateLastaxes[n],axes=axis,cval=fill,reshape=False,order=order)
         if (axis[0]-1)<=axis[1]:
             axis[1]-=1
             axis[0]=len(oldArray.shape)-1

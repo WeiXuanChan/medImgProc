@@ -117,6 +117,10 @@ History:
                                                             -processFunc v2.2.8
                                                             -Image v2.3.13
                                                             -GUI v2.3.10
+  Author: w.x.chan@gmail.com         21JAN2020           - v2.3.14
+                                                            -processFunc v2.3.14
+                                                            -Image v2.3.13
+                                                            -GUI v2.3.10
 
 
 Requirements:
@@ -129,7 +133,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.3.13'
+_version='2.3.14'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 

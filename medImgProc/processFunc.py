@@ -177,6 +177,7 @@ class gradient_ascent:
             
             newPara=self.para+self.gain*self.slope*gradient
             newfVal=self.func(newPara,*self.args)
+            logger.debug(str(count)+' : Current Para '+str(self.para)+' , Cost '+str(self.fVal)+' , Gradient '+str(gradient)+' , Gain '+str(self.gain)+' , Next cost '+str(newfVal))
             '''reduce gain is fVal did not improve'''
             while ((newfVal>self.fVal) ^ (self.slope==1)):
                 self.gain*=0.7

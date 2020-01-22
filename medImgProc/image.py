@@ -244,10 +244,22 @@ def recursive2DWrite(imageArray,currentDim,axes,filePath,imageFormat,dimRange,fp
     else:
         for n in dimRange[currentDim[0]]:
             if len(currentDim)==(4+color):
-                imageio.mimwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),imageArray[n],format=imageFormat,fps=fps)
+                saveData=changeArraySizeTo2bitBlocks(imageArray[n],color=color)
+                imageio.mimwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),saveData,format=imageFormat,fps=fps)
             elif len(currentDim)<(4+color):
                 imageio.imwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),imageArray[n])
-
+def changeArraySizeTo2bitBlocks(inputArray,color=0):
+    arrayShape=list(inputArray.shape)
+    sliceList=[]
+    for n in range(len(arrayShape)):
+        sliceList.append(slice(arrayShape[n]))
+    for n in range(-1-color,-3-color,-1):
+        extraDataLength=np.binary_repr(arrayShape[n])[1:]
+        if int(extraDataLength,2):
+            arrayShape[n]=int('10'+'0'*len(extraDataLength),2)
+    resultArray=np.zeros(arrayShape,dtype=inputArray.dtype)
+    resultArray[tuple(sliceList)]=inputArray.copy
+    return resultArray
 def linearSampling(image,pixelfloat,fill=0):
     return RegularGridInterpolator(tuple(map(range,image.data.shape)),image.data,fill_value=fill,bounds_error=False)(pixelfloat)
 
@@ -562,6 +574,7 @@ class image:
         saveData=saveData.transpose(transposeIndex)
         if len(currentDim)==len(axes):
             if len(currentDim)==(3+color):
+                saveData=changeArraySizeTo2bitBlocks(saveData,color=color)
                 imageio.mimwrite(os.path.normpath(filePath+'/0.'+imageFormat),saveData,format=imageFormat,fps=fps)
             elif len(currentDim)==(2+color):
                 imageio.imwrite(os.path.normpath(filePath+'/0.'+imageFormat),saveData)

@@ -183,8 +183,11 @@ def stretch(imageClass,stretchDim,scheme=image.DEFAULT_INTERPOLATION_SCHEME):
 def save(imageClass,filePath):
     imageClass.save(filePath)
 def load(filePath):
-    with open(filePath, 'rb') as input:
-        outObj = pickle.load(input)
+    try:
+        with open(filePath, 'rb') as input:
+            outObj = pickle.load(input)
+    except:
+        outObj=imread(filePath)
     return outObj
 def loadStack(imageFileFormat,dimension=None,n=0,maxskip=0):
     try:

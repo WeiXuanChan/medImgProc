@@ -25,7 +25,7 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.filters import uniform_filter
 from scipy.ndimage.measurements import variance
 from scipy.stats import norm
-import medImgProc.processFunc as pf
+import processFunc as pf
 
 #Optional dependancies
 try:

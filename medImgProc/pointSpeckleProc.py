@@ -25,7 +25,7 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.filters import uniform_filter
 from scipy.ndimage.measurements import variance
 from scipy.stats import norm
-import processFunc as pf
+import processFunc
 
 #Optional dependancies
 try:
@@ -265,7 +265,7 @@ def speckleTransform(speckleImageArray,transformFolder,fromTime,toTime=None,tota
                 file=transformFolder+'/tstep'+str(currentTime)+'to'+str(nextTime)+'_0.txt'
                 if not(os.path.isfile(file)):
                     logger.error('ERROR '+file+' does not exist')
-                posF.append(pf.transform_img2img(posF[-1],file,savePath=transformFolder))
+                posF.append(processFunc.transform_img2img(posF[-1],file,savePath=transformFolder))
                 currentTime=nextTime
                 Fcount+=1
             #Backward
@@ -287,7 +287,7 @@ def speckleTransform(speckleImageArray,transformFolder,fromTime,toTime=None,tota
                 file=transformFolder+'/tstep'+str(currentTime)+'to'+str(nextTime)+'_0.txt'
                 if not(os.path.isfile(file)):
                     logger.error('ERROR '+file+' does not exist')
-                posB.append(pf.transform_img2img(posB[-1],file,savePath=transformFolder))
+                posB.append(processFunc.transform_img2img(posB[-1],file,savePath=transformFolder))
                 currentTime=nextTime
                 Bcount+=1
             if type(toTime)==type(None):
@@ -309,14 +309,14 @@ def speckleTransform(speckleImageArray,transformFolder,fromTime,toTime=None,tota
                 file=transformFolder+'/tstep'+str(currentTime)+'to'+str(currentTime+incr)+'_0.txt'
                 if not(os.path.isfile(file)):
                     logger.error('ERROR '+file+' does not exist')
-                newpos=pf.transform_img2img(newpos,file,savePath=transformFolder)
+                newpos=processFunc.transform_img2img(newpos,file,savePath=transformFolder)
                 currentTime+=incr
             newpos=np.array([newpos])
     else:
         file=transformFolder+'/tstep'+str(fromTime)+'to'+str(toTime)+'_0.txt'
         if not(os.path.isfile(file)):
             logger.error('ERROR '+file+' does not exist')
-        newpos=np.array([pf.transform_img2img(pos,file,savePath=transformFolder)])
+        newpos=np.array([processFunc.transform_img2img(pos,file,savePath=transformFolder)])
     if type(toTime)==type(None) and Eulerian and totalTimeSteps:
         runN=totalTimeSteps
     else:

@@ -1,5 +1,5 @@
 '''
-File: pointSpeckleProc.py
+File: PointSpeckleProc.py
 Description: Processes for ultrasound point speckles
 History:
     Date    Programmer SAR# - Description
@@ -13,7 +13,7 @@ Known Bug:
     None
 All rights reserved.
 '''
-_version='1.0.0'
+_version='2.4.0'
 import logging
 logger = logging.getLogger(__name__)
 
@@ -148,7 +148,7 @@ def reduceNonRandom(image,sigmas,densityApprox=None,dimSigmaFactor=1.,average=Fa
         mean=normVal*density*(image.data.shape[dimInd]-1)+1
         std=(mean-1)*abs(dimSigmaFactor)
         
-        logger.info('Using mean and std of:'+repr(mean)+' , '+repr(std))
+        logger.info('Using mean and std of: {0:.3f} , {1:.3f}'.format(mean,std))
         nProb=norm(mean,std)
         normalize=1./nProb.pdf(mean)
         

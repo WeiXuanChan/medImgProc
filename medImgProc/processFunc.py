@@ -49,6 +49,8 @@ History:
                                                               -in alignAxes_translate, add mask type tuple
     Author: w.x.chan@gmail.com         02JAN2020           - v2.3.14
                                                               -in translateArray, include interpolation order arguments
+    Author: w.x.chan@gmail.com         04FEB2020           - v2.4.0
+                                                              -added functions: cyclicNonRigidCorrection AND nonRigidRegistration
                                                               
 
 Requirements:
@@ -61,7 +63,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.3.14'
+_version='2.4.0'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1336,6 +1338,135 @@ def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',scaleImg=1
             Tmap=elastixImageFilter.GetTransformParameterMap()
             for m in range(len(Tmap)):
                 sitk.WriteParameterFile(Tmap[m],savePath+'/transform/'+fileName+'_t'+str(n)+'.txt')
+def nonRigidRegistration(nonRigidSavePath,imageArray,gridSize,bgridFactor=1,metric='AdvancedMeanSquares',inverse=True,full=True):
+
+    os.makedirs(nonRigidSavePath+'/transform', exist_ok=True)
+
+    origin=tuple(np.zeros(len(imageArray.shape)-1))
+    spacing=tuple(np.ones(len(imageArray.shape)-1))
+    parameterMapVector = sitk.VectorOfParameterMap() 
+    bspline=sitk.GetDefaultParameterMap("bspline")
+    bspline["AutomaticScalesEstimation"]=( "true", )
+    bspline["AutomaticTransformInitialization"] = ( "true", )
+    bspline['Metric0Weight']=(str(1),)
+    bspline['FinalGridSpacingInPhysicalUnits']=tuple((gridSize*bgridFactor).astype(str))
+    bspline["Metric"]=(metric,bspline["Metric"][1])
+
+    parameterMapVector.append(bspline)
+
+    '''start'''
+    firstCyclicTimeStep=imageArray.shape[0]
+    colorVec=False
+    for nn in range(firstCyclicTimeStep):
+        fixImg=sitk.GetImageFromArray(np.copy(imageArray[nn]), isVector=colorVec)
+        fixImg.SetOrigin(origin)
+        fixImg.SetSpacing(spacing)
+        for n in range(imageArray.shape[0]):
+            if n==nn:
+                continue
+            if not(full):
+                if n==(imageArray.shape[0]-1) and nn==0:
+                    pass
+                elif n==0 and nn==(imageArray.shape[0]-1):
+                    pass
+                elif abs(n-nn)>1:
+                    continue
+            if inverse:
+                filename='tstep'+str(n)+'to'+str(nn)
+            else:
+                filename='tstep'+str(nn)+'to'+str(n)
+            logger.info('Registering '+filename)
+            elastixImageFilter=sitk.ElastixImageFilter()
+            elastixImageFilter.LogToFileOff()
+            elastixImageFilter.LogToConsoleOff()
+            movImg=sitk.GetImageFromArray(np.copy(imageArray[n]), isVector=colorVec)
+            movImg.SetOrigin(origin)
+            movImg.SetSpacing(spacing)
+            if inverse:
+                elastixImageFilter.SetFixedImage(movImg)
+                elastixImageFilter.SetMovingImage(fixImg)
+            else:
+                elastixImageFilter.SetFixedImage(fixImg)
+                elastixImageFilter.SetMovingImage(movImg)
+            elastixImageFilter.SetParameterMap(parameterMapVector)
+            elastixImageFilter.Execute()
+            Tmap=elastixImageFilter.GetTransformParameterMap()
+            for m in range(len(Tmap)):
+                sitk.WriteParameterFile(Tmap[m],nonRigidSavePath+'/transform/'+filename+'_'+str(m)+'.txt')
+    return;
+def cyclicNonRigidCorrection(cyclicTimeStep,imageArray,gridSize,nonRigidSavePath='',bgridFactor=1,metric='AdvancedMeanSquares',inverse=False,returnSyncPhase=False,saveImage=False):
+    if nonRigidSavePath:
+        os.makedirs(nonRigidSavePath+'/transform', exist_ok=True)
+    if isinstance(cyclicTimeStep,list):
+        firstCyclicTimeStep=cyclicTimeStep[1]
+        cyclicSlice=[]
+        cyc_temp=np.array(cyclicTimeStep)[1:]-np.array(cyclicTimeStep)[:-1]
+        for n in range(firstCyclicTimeStep):
+            phase=n/float(cyclicTimeStep[1])
+            cyclicSlice.append(np.around(phase*cyc_temp+np.array(cyclicTimeStep)[:-1]).astype(int))
+        cyclicSlice=np.array(cyclicSlice)
+    elif isinstance(cyclicTimeStep,int):
+        firstCyclicTimeStep=cyclicTimeStep
+        cyclicSlice=[]
+        for n in range(firstCyclicTimeStep):
+            cyclicSlice.append(np.arange(n,int(imageArray.shape[0]/cyclicTimeStep)*cyclicTimeStep,cyclicTimeStep).astype(int))
+        cyclicSlice=np.array(cyclicSlice)
+    else:
+        firstCyclicTimeStep=cyclicTimeStep.shape[0]
+        cyclicSlice=cyclicTimeStep.copy()
+    origin=tuple(np.zeros(len(imageArray.shape)-1))
+    spacing=tuple(np.ones(len(imageArray.shape)-1))
+
+    parameterMapVector = sitk.VectorOfParameterMap() 
+    bspline=sitk.GetDefaultParameterMap("bspline")
+    bspline["AutomaticScalesEstimation"]=( "true", )
+    bspline["AutomaticTransformInitialization"] = ( "true", )
+    bspline['Metric0Weight']=(str(1),)
+    bspline['FinalGridSpacingInPhysicalUnits']=tuple((gridSize*bgridFactor).astype(str))
+    bspline["Metric"]=(metric,bspline["Metric"][1])
+
+    parameterMapVector.append(bspline)
+
+    newImageArray=np.zeros((firstCyclicTimeStep*cyclicTimeStep.shape[1],*imageArray.shape[1:]))
+    '''start'''
+    colorVec=False
+    for nn in range(firstCyclicTimeStep):
+        tempImageArray=imageArray[cyclicSlice[nn]].copy()
+        fixImg=sitk.GetImageFromArray(np.copy(tempImageArray[0]), isVector=colorVec)
+        fixImg.SetOrigin(origin)
+        fixImg.SetSpacing(spacing)
+        for n in range(1,len(tempImageArray)):
+            if inverse:
+                filename='t'+str(cyclicSlice[nn][n])+'to'+str(cyclicSlice[nn][0])
+            else:
+                filename='t'+str(cyclicSlice[nn][0])+'to'+str(cyclicSlice[nn][n])
+            logger.info('Registering '+filename)
+            elastixImageFilter=sitk.ElastixImageFilter()
+            elastixImageFilter.LogToFileOff()
+            elastixImageFilter.LogToConsoleOff()
+            movImg=sitk.GetImageFromArray(np.copy(tempImageArray[n]), isVector=colorVec)
+            movImg.SetOrigin(origin)
+            movImg.SetSpacing(spacing)
+            if inverse:
+                elastixImageFilter.SetFixedImage(movImg)
+                elastixImageFilter.SetMovingImage(fixImg)
+            else:
+                elastixImageFilter.SetFixedImage(fixImg)
+                elastixImageFilter.SetMovingImage(movImg)
+            elastixImageFilter.SetParameterMap(parameterMapVector)
+            elastixImageFilter.Execute()
+            Tmap=elastixImageFilter.GetTransformParameterMap()
+            if nonRigidSavePath:
+                for m in range(len(Tmap)):
+                    sitk.WriteParameterFile(Tmap[m],nonRigidSavePath+'/transform/'+filename+'_'+str(m)+'.txt')
+                if saveImage:
+                    sitk.WriteImage(elastixImageFilter.GetResultImage(),nonRigidSavePath+'/'+filename+'_resultImg.mha')
+            tempImageArray[n]=sitk.GetArrayFromImage(elastixImageFilter.GetResultImage())
+        newImageArray[nn::cyclicTimeStep.shape[0]]=tempImageArray.copy()
+    if returnSyncPhase:
+        return (newImageArray,cyclicSlice)
+    else:
+        return newImageArray
 def TmapRegister_rigid(image1,image2,savePath='',fileInit=None,fileName='img2img',origin1=(0.,0.,0.),origin2=(0.,0.,0.),bsplineTransformCorrection=False,rms=True,bgrid=2.,bweight=1.):
     image1=image1.clone()
     image2=image2.clone()

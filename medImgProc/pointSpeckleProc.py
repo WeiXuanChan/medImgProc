@@ -1,5 +1,5 @@
 '''
-File: PointSpeckleProc.py
+File: pointSpeckleProc.py
 Description: Processes for ultrasound point speckles
 History:
     Date    Programmer SAR# - Description

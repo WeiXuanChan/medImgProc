@@ -32,10 +32,6 @@ try:
     import pickle
 except ImportError:
     pass
-try:
-    import SimpleITK as sitk
-except:
-    pass
 
 def gKern(std,kernlen=7,normalize=None):
     """Returns a Gaussian kernel array."""

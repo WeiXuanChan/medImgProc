@@ -8,7 +8,7 @@ History:
   
 Requirements:
     numpy
-    pickle (optional)
+    scipy
 Known Bug:
     None
 All rights reserved.
@@ -28,10 +28,6 @@ from scipy.stats import norm
 import processFunc
 
 #Optional dependancies
-try:
-    import pickle
-except ImportError:
-    pass
 
 def gKern(std,kernlen=7,normalize=None):
     """Returns a Gaussian kernel array."""

@@ -244,21 +244,28 @@ def recursive2DWrite(imageArray,currentDim,axes,filePath,imageFormat,dimRange,fp
     else:
         for n in dimRange[currentDim[0]]:
             if len(currentDim)==(4+color):
-                saveData=changeArraySizeTo2bitBlocks(imageArray[n],color=color)
+                if imageFormat!='gif':
+                    saveData=changeArraySizeTo2bitBlocks(imageArray[n],color=color)
+                else:
+                    saveData=imageArray[n]
                 imageio.mimwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),saveData,format=imageFormat,fps=fps)
             elif len(currentDim)<(4+color):
                 imageio.imwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),imageArray[n])
-def changeArraySizeTo2bitBlocks(inputArray,color=0):
+def changeArraySizeTo2bitBlocks(inputArray,color=0,logPower=False,base=16):
     arrayShape=list(inputArray.shape)
     sliceList=[]
     for n in range(len(arrayShape)):
         sliceList.append(slice(arrayShape[n]))
     for n in range(-1-color,-3-color,-1):
-        extraDataLength=np.binary_repr(arrayShape[n])[1:]
-        if int(extraDataLength,2):
-            arrayShape[n]=int('10'+'0'*len(extraDataLength),2)
+        if logPower:
+            extraDataLength=np.base_repr(arrayShape[n],base=base)[1:]
+            if int(extraDataLength,base):
+                arrayShape[n]=int('10'+'0'*len(extraDataLength),base)
+        else:
+            if (arrayShape[n]%base)!=0:
+                arrayShape[n]=(arrayShape[n]//base+1)*base
     resultArray=np.zeros(arrayShape,dtype=inputArray.dtype)
-    resultArray[tuple(sliceList)]=inputArray.copy
+    resultArray[tuple(sliceList)]=inputArray.copy()
     return resultArray
 def linearSampling(image,pixelfloat,fill=0):
     return RegularGridInterpolator(tuple(map(range,image.data.shape)),image.data,fill_value=fill,bounds_error=False)(pixelfloat)
@@ -574,7 +581,8 @@ class image:
         saveData=saveData.transpose(transposeIndex)
         if len(currentDim)==len(axes):
             if len(currentDim)==(3+color):
-                saveData=changeArraySizeTo2bitBlocks(saveData,color=color)
+                if imageFormat!='gif':
+                    saveData=changeArraySizeTo2bitBlocks(saveData,color=color)
                 imageio.mimwrite(os.path.normpath(filePath+'/0.'+imageFormat),saveData,format=imageFormat,fps=fps)
             elif len(currentDim)==(2+color):
                 imageio.imwrite(os.path.normpath(filePath+'/0.'+imageFormat),saveData)
@@ -830,4 +838,3 @@ class image:
         points=result.points[:,transposeIndex]
         return points
         
-

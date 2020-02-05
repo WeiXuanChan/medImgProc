@@ -28,6 +28,8 @@ History:
                                                             -return gui to function image.show()
                                                             -return exception from imageio when error reading file
                                                             -debug when imageio.get_reader does not have 'nframes'
+  Author: w.x.chan@gmail.com         15JAN2020           - v2.4.1
+                                                            -debug change video format to block size
                                                             
   
 Requirements:
@@ -39,7 +41,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.3.13'
+_version='2.4.1'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np

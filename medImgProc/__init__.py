@@ -127,7 +127,7 @@ History:
                                                             -GUI v2.3.10
                                                             -pointSpeckleProc v2.4.0
                                                             -Snake v2.4.0
-  Author: w.x.chan@gmail.com         21JAN2020           - v2.4.2
+  Author: w.x.chan@gmail.com         21JAN2020           - v2.4.3
                                                             -processFunc v2.4.0
                                                             -Image v2.4.1
                                                             -GUI v2.3.10
@@ -144,7 +144,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.4.2'
+_version='2.4.3'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 
@@ -222,7 +222,7 @@ def loadStack(imageFileFormat,dimension=None,n=0,maxskip=0):
         try:
             nextImg=getFunc(imageFileFormat.format(n))
             if dimension not in nextImg.dim:
-                nextImg.data=nextImg.reshape((1,*nextImg.data.shape))
+                nextImg.data=nextImg.data.reshape((1,*nextImg.data.shape))
             newImage.data=np.concatenate((newImage.data,nextImg.data.copy()),axis=stackaxis)
             skip=0
         except:

@@ -1626,12 +1626,13 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
         ref_mesh=trimesh.load(stlFile)
         oriPos=np.array(ref_mesh.vertices)/scale
     else:
-        oriPos=np.loadtxt(stlFile,delimiter=delimiter)/scale
+        oriPos=np.loadtxt(stlFile,delimiter=delimiter)
     
     if oriPos.shape[-1]>5 or len(oriPos.shape)!=2:
         trfImage=True
     else:
         trfImage=False
+        oriPos=oriPos/scale
         np.savetxt(savePath+'/input0.pts',oriPos,header='point\n'+str(len(oriPos)),comments='')
     Tmap=[]#SimpleITK.VectorOfParameterMap()
     Tmap.append(sitk.ReadParameterFile(trfFile))

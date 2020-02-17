@@ -51,9 +51,9 @@ History:
                                                               -in translateArray, include interpolation order arguments
     Author: w.x.chan@gmail.com         04FEB2020           - v2.4.0
                                                               -added functions: cyclicNonRigidCorrection AND nonRigidRegistration
-    Author: w.x.chan@gmail.com         17FEB2020           - v2.4.4
+    Author: w.x.chan@gmail.com         17FEB2020           - v2.4.5
                                                               -in transform_img2img, debug image np.ndarray input without scaling                                                            
-
+                                                              
 Requirements:
     numpy.py
     scipy.py
@@ -64,7 +64,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.4.4'
+_version='2.4.5'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1622,10 +1622,10 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
         savePath=stlFile[:-4]
     os.makedirs(savePath, exist_ok=True)
     if type(stlFile)!=str:
-        oriPos=stlFile
+        oriPos=stlFile.copy()
     elif stlFile[-3:]=='stl':
         ref_mesh=trimesh.load(stlFile)
-        oriPos=np.array(ref_mesh.vertices)/scale
+        oriPos=np.array(ref_mesh.vertices)
     else:
         oriPos=np.loadtxt(stlFile,delimiter=delimiter)
     

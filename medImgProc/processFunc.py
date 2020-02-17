@@ -51,7 +51,7 @@ History:
                                                               -in translateArray, include interpolation order arguments
     Author: w.x.chan@gmail.com         04FEB2020           - v2.4.0
                                                               -added functions: cyclicNonRigidCorrection AND nonRigidRegistration
-    Author: w.x.chan@gmail.com         04FEB2020           - v2.4.4
+    Author: w.x.chan@gmail.com         17FEB2020           - v2.4.4
                                                               -in transform_img2img, debug image np.ndarray input without scaling                                                            
 
 Requirements:

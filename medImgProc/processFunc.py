@@ -51,7 +51,8 @@ History:
                                                               -in translateArray, include interpolation order arguments
     Author: w.x.chan@gmail.com         04FEB2020           - v2.4.0
                                                               -added functions: cyclicNonRigidCorrection AND nonRigidRegistration
-                                                              
+    Author: w.x.chan@gmail.com         04FEB2020           - v2.4.4
+                                                              -in transform_img2img, debug image np.ndarray input without scaling                                                            
 
 Requirements:
     numpy.py
@@ -63,7 +64,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.4.0'
+_version='2.4.4'
 
 import logging
 logger = logging.getLogger(__name__)

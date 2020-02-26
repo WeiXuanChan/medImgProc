@@ -1134,6 +1134,7 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
     sitk.WriteImage(fixImg,savePath+'/t0Img.mha')
     timeList=np.array(range(len(image.data)))*image.dimlen['t']
     np.savetxt(savePath+'/transform/timeList',timeList)
+    np.savetxt(savePath+'/transform/fileScale.txt',[scaleImg])
     for n in range(startTime,image.data.shape[0]-1):
         logger.info('Registering t '+str(n+1)+' wrt t '+str(n))
         elastixImageFilter=sitk.ElastixImageFilter()

@@ -55,7 +55,7 @@ History:
                                                               -in transform_img2img, debug image np.ndarray input without scaling                                                            
     Author: w.x.chan@gmail.com         26FEB2020           - v2.4.6
                                                               -in TmapRegister, save fileScale                                                           
-    Author: w.x.chan@gmail.com         26FEB2020           - v2.5.0
+    Author: w.x.chan@gmail.com         28FEB2020           - v2.5.0
                                                               -in functions with SimpleITK image registration, add maskArray input
                                                               
 Requirements:

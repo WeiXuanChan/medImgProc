@@ -1067,7 +1067,7 @@ def vectorRegister(image,savePath='',stlRefDim={},baseRefFraction=1.,baseRefFunc
         if baseRefFraction!=1.:
             np.savetxt(pointfile+'Output/outputpoints.pts',newPixelVertice,header='point\n'+str(len(pixelVertice)),comments='')
 
-def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=False,startTime=0,scaleImg=1.,writeImg=False,twoD=False,nres =3,smoothing=True,cyclic=False):
+def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=False,startTime=0,scaleImg=1.,maskArray=None,writeImg=False,twoD=False,nres =3,smoothing=True,cyclic=False):
     image=image.clone()
     if scaleImg!=1:
         for axis in ['x','y','z']:
@@ -1151,6 +1151,15 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
         elastixImageFilter.SetFixedImage(fixImg)
         elastixImageFilter.SetMovingImage(movImg)
         elastixImageFilter.SetParameterMap(parameterMapVector)
+        if maskArray is not None:
+            fixMask=sitk.GetImageFromArray(maskArray[n].astype('uint8'), isVector=colorVec)
+            fixMask.SetOrigin(origin)
+            fixMask.SetSpacing(spacing)
+            movMask=sitk.GetImageFromArray(maskArray[n+1].astype('uint8'), isVector=colorVec)
+            movMask.SetOrigin(origin)
+            movMask.SetSpacing(spacing)
+            elastixImageFilter.SetFixedMask(fixMask)
+            elastixImageFilter.SetMovingMask(movMask)
         elastixImageFilter.Execute()
         Tmap=elastixImageFilter.GetTransformParameterMap()
         for m in range(len(Tmap)):
@@ -1165,6 +1174,9 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
             elastixImageFilter.SetFixedImage(movImg)
             elastixImageFilter.SetMovingImage(fixImg)
             elastixImageFilter.SetParameterMap(parameterMapVector)
+            if maskArray is not None:
+                elastixImageFilter.SetFixedMask(movMask)
+                elastixImageFilter.SetMovingMask(fixMask)
             elastixImageFilter.Execute()
             Tmap=elastixImageFilter.GetTransformParameterMap()
             for m in range(len(Tmap)):
@@ -1185,6 +1197,15 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
             elastixImageFilter.SetFixedImage(fixImg)
             elastixImageFilter.SetMovingImage(movImg)
             elastixImageFilter.SetParameterMap(parameterMapVector)
+            if maskArray is not None:
+                fixMask=sitk.GetImageFromArray(maskArray[0].astype('uint8'), isVector=colorVec)
+                fixMask.SetOrigin(origin)
+                fixMask.SetSpacing(spacing)
+                movMask=sitk.GetImageFromArray(maskArray[n+1].astype('uint8'), isVector=colorVec)
+                movMask.SetOrigin(origin)
+                movMask.SetSpacing(spacing)
+                elastixImageFilter.SetFixedMask(fixMask)
+                elastixImageFilter.SetMovingMask(movMask)
             elastixImageFilter.Execute()
             Tmap=elastixImageFilter.GetTransformParameterMap()
             for m in range(len(Tmap)):
@@ -1205,6 +1226,15 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
         elastixImageFilter.SetFixedImage(fixImg)
         elastixImageFilter.SetMovingImage(movImg)
         elastixImageFilter.SetParameterMap(parameterMapVector)
+        if maskArray is not None:
+            fixMask=sitk.GetImageFromArray(maskArray[-1].astype('uint8'), isVector=colorVec)
+            fixMask.SetOrigin(origin)
+            fixMask.SetSpacing(spacing)
+            movMask=sitk.GetImageFromArray(maskArray[0].astype('uint8'), isVector=colorVec)
+            movMask.SetOrigin(origin)
+            movMask.SetSpacing(spacing)
+            elastixImageFilter.SetFixedMask(fixMask)
+            elastixImageFilter.SetMovingMask(movMask)
         elastixImageFilter.Execute()
         Tmap=elastixImageFilter.GetTransformParameterMap()
         for m in range(len(Tmap)):
@@ -1224,7 +1254,7 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
             sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t'+str(0)+'to'+str(image.data.shape[0]-1)+'_'+str(m)+'.txt')
         if writeImg:
             sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(0)+'to'+str(image.data.shape[0]-1)+'_resultImg.mha')
-def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',scaleImg=1.,tInd=None,origin1=(0.,0.,0.),origin2=(0.,0.,0.),EulerTransformCorrection=False,rms=False,bgrid=2.,bweight=1.,twoD=False,nres =3,smoothing=True):
+def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',scaleImg=1.,tInd=None,origin1=(0.,0.,0.),origin2=(0.,0.,0.),maskArray1=None,maskArray2=None,EulerTransformCorrection=False,rms=False,bgrid=2.,bweight=1.,twoD=False,nres =3,smoothing=True):
     image1=image1.clone()
     image2=image2.clone()
     if scaleImg!=1:
@@ -1319,6 +1349,16 @@ def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',scaleImg=1
         elastixImageFilter.SetFixedImage(fixImg)
         elastixImageFilter.SetMovingImage(movImg)
         elastixImageFilter.SetParameterMap(parameterMapVector)
+        if maskArray1 is not None:
+            fixMask=sitk.GetImageFromArray(maskArray1.astype('uint8'), isVector=colorVec)
+            fixMask.SetOrigin(origin1)
+            fixMask.SetSpacing(spacing1)
+            elastixImageFilter.SetFixedMask(fixMask)
+        if maskArray2 is not None:
+            movMask=sitk.GetImageFromArray(maskArray2.astype('uint8'), isVector=colorVec)
+            movMask.SetOrigin(origin2)
+            movMask.SetSpacing(spacing2)
+            elastixImageFilter.SetMovingMask(movMask)
         elastixImageFilter.Execute()
         Tmap=elastixImageFilter.GetTransformParameterMap()
         for m in range(len(Tmap)):
@@ -1338,6 +1378,16 @@ def TmapRegister_img2img(image1,image2,savePath='',fileName='img2img',scaleImg=1
             elastixImageFilter.SetFixedImage(fixImg)
             elastixImageFilter.SetMovingImage(movImg)
             elastixImageFilter.SetParameterMap(parameterMapVector)
+            if maskArray1 is not None:
+                fixMask=sitk.GetImageFromArray(maskArray1[n].astype('uint8'), isVector=colorVec)
+                fixMask.SetOrigin(origin1)
+                fixMask.SetSpacing(spacing1)
+                elastixImageFilter.SetFixedMask(fixMask)
+            if maskArray2 is not None:
+                movMask=sitk.GetImageFromArray(maskArray2[n].astype('uint8'), isVector=colorVec)
+                movMask.SetOrigin(origin2)
+                movMask.SetSpacing(spacing2)
+                elastixImageFilter.SetMovingMask(movMask)
             elastixImageFilter.Execute()
             Tmap=elastixImageFilter.GetTransformParameterMap()
             for m in range(len(Tmap)):
@@ -1471,7 +1521,7 @@ def cyclicNonRigidCorrection(cyclicTimeStep,imageArray,gridSize,nonRigidSavePath
         return (newImageArray,cyclicSlice)
     else:
         return newImageArray
-def TmapRegister_rigid(image1,image2,savePath='',fileInit=None,fileName='img2img',origin1=(0.,0.,0.),origin2=(0.,0.,0.),bsplineTransformCorrection=False,rms=True,bgrid=2.,bweight=1.):
+def TmapRegister_rigid(image1,image2,savePath='',fileInit=None,fileName='img2img',origin1=(0.,0.,0.),origin2=(0.,0.,0.),maskArray1=None,maskArray2=None,bsplineTransformCorrection=False,rms=True,bgrid=2.,bweight=1.):
     image1=image1.clone()
     image2=image2.clone()
     image1.rearrangeDim(['z','y','x'])
@@ -1547,6 +1597,16 @@ def TmapRegister_rigid(image1,image2,savePath='',fileInit=None,fileName='img2img
         elastixImageFilter.SetInitialTransformParameterFileName(fileInit)
         logger.info('Set initial transform parameters: '+str(fileInit))
     elastixImageFilter.SetParameterMap(parameterMapVector)
+    if maskArray1 is not None:
+        fixMask=sitk.GetImageFromArray(maskArray1.astype('uint8'), isVector=colorVec)
+        fixMask.SetOrigin(origin1)
+        fixMask.SetSpacing(spacing1)
+        elastixImageFilter.SetFixedMask(fixMask)
+    if maskArray2 is not None:
+        movMask=sitk.GetImageFromArray(maskArray2.astype('uint8'), isVector=colorVec)
+        movMask.SetOrigin(origin2)
+        movMask.SetSpacing(spacing2)
+        elastixImageFilter.SetMovingMask(movMask)
     elastixImageFilter.Execute()
     Tmap=elastixImageFilter.GetTransformParameterMap()
     if os.path.isfile(fileInit):
@@ -2147,10 +2207,10 @@ class registrator:
         
         os.makedirs(savePath+'/'+'logFile', exist_ok=True)
         
-        #elastixImageFilter.SetLogToFile(True)
-        #elastixImageFilter.SetOutputDirectory(savePath+'/'+'logFile')
-        #elastixImageFilter.SetLogFileName('elastix.txt')
-        elastixImageFilter.SetLogToConsole(False)
+        elastixImageFilter.SetLogToFile(True)
+        elastixImageFilter.SetOutputDirectory(savePath+'/'+'logFile')
+        elastixImageFilter.SetLogFileName('elastix.txt')
+        #elastixImageFilter.SetLogToConsole(False)
 
         elastixImageFilter.Execute()
         Tmap=elastixImageFilter.GetTransformParameterMap()

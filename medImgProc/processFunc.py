@@ -57,6 +57,8 @@ History:
                                                               -in TmapRegister, save fileScale                                                           
     Author: w.x.chan@gmail.com         28FEB2020           - v2.5.0
                                                               -in functions with SimpleITK image registration, add maskArray input
+    Author: w.x.chan@gmail.com         05MAR2020           - v2.5.1
+                                                              -in SAC, sanitise data to 'uint8'
                                                               
 Requirements:
     numpy.py
@@ -68,7 +70,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.5.0'
+_version='2.5.1'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -2511,7 +2513,7 @@ def compound(image,scheme='mean',schemeArgs=None,axis='t',twoD=False,parallel=Tr
             schemeArgs=0.5
             
         SCAfunc=SAC(schemeArgs,returnStats=returnStats)
-        
+        image.data=np.minimum(255,np.maximum(0,image.data.astype('uint8')))
         resultData=image.data.reshape((-1,image.data.shape[-1]),order='F')
         if twoD:
             for xn in range(image.data.shape[0]):

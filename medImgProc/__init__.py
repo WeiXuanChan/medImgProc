@@ -142,7 +142,7 @@ History:
                                                             -Image v2.4.1
                                                             -GUI v2.3.10
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         05Mar2020           - v2.5.1
+  Author: w.x.chan@gmail.com         05Mar2020           - v2.5.2
                                                             -processFunc v2.5.1
                                                             -Image v2.4.1
                                                             -GUI v2.3.10
@@ -159,7 +159,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.5.1'
+_version='2.5.2'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 
@@ -216,12 +216,36 @@ def load(filePath):
         outObj=imread(filePath)
     return outObj
 def loadStack(imageFileFormat,dimension=None,n=0,maxskip=0):
-    try:
-        newImage=load(imageFileFormat.format(n))
-        getFunc=load
-    except:
-        newImage=imread(imageFileFormat.format(n))
-        getFunc=imread
+    getFunc=None
+    if isinstance(n,(list,tuple)):
+        if len(n)==0:
+            n=0
+            n_new=0
+        elif len(n)==1:
+            n=n[0]
+            n_new=n
+        else:
+            n_new=list(n)
+            n=n_new.pop(0)
+    else:
+        n_new=n
+    if isinstance(dimension,(list,tuple)):
+        dimension_new=[]
+        if len(dimension)==0:
+            dimension=None
+        else:
+            dimension_new=list(dimension)
+            dimension=dimension_new.pop(0)
+        if len(dimension_new)>0:
+            getFunc=lambda x_imageFileFormat : loadStack(x_imageFileFormat,dimension=dimension_new,n=n_new,maxskip=maxskip)
+            newImage=getFunc(imageFileFormat.format(n))
+    if type(getFunc)==type(None):
+        try:
+            newImage=load(imageFileFormat.format(n))
+            getFunc=load
+        except:
+            newImage=imread(imageFileFormat.format(n))
+            getFunc=imread
     if type(dimension)==type(None):
         stackaxis=0
     elif isinstance(dimension,int):

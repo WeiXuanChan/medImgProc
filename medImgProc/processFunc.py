@@ -59,6 +59,8 @@ History:
                                                               -in functions with SimpleITK image registration, add maskArray input
     Author: w.x.chan@gmail.com         05MAR2020           - v2.5.1
                                                               -in SAC, sanitise data to 'uint8'
+    Author: w.x.chan@gmail.com         05MAR2020           - v2.5.3
+                                                              -in transform, added forwardbackward and change default startTime from 1 to 0,
                                                               
 Requirements:
     numpy.py
@@ -70,7 +72,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.5.1'
+_version='2.5.3'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1620,7 +1622,7 @@ def TmapRegister_rigid(image1,image2,savePath='',fileInit=None,fileName='img2img
         sitk.WriteParameterFile(Tmap[0],fileInit)
     sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/'+fileName+'_resultImg.mha')
 
-def transform(stlFile,timeStepNo,mapNo,startTime=1,cumulative=True,ratioFunc=timestepPoly,savePath='',TmapPath='',scale=1.,delimiter=' '):
+def transform(stlFile,timeStepNo,mapNo,startTime=0,cumulative=True,ratioFunc=timestepPoly,savePath='',TmapPath='',scale=1.,delimiter=' ',forwardbackward=False):
     if savePath=='':
         savePath=stlFile[:-4]
     if TmapPath=='':
@@ -1632,58 +1634,141 @@ def transform(stlFile,timeStepNo,mapNo,startTime=1,cumulative=True,ratioFunc=tim
     else:
         oriPos=np.loadtxt(stlFile,delimiter=delimiter)/scale
     np.savetxt(savePath+'/input0.pts',oriPos,header='point\n'+str(len(oriPos)),comments='')
-    for n in range(startTime,timeStepNo):
-        Tmap=[]#SimpleITK.VectorOfParameterMap()
-        for m in range(mapNo):
-            Tmap.append(sitk.ReadParameterFile(TmapPath+'/transform/t0to'+str(n)+'_'+str(m)+'.txt'))
-        
-        transformixImageFilter=sitk.TransformixImageFilter()
-        transformixImageFilter.LogToFileOff()
-        transformixImageFilter.LogToConsoleOff()
-        transformixImageFilter.SetTransformParameterMap(Tmap)
-        transformixImageFilter.SetMovingImage(sitk.ReadImage(TmapPath+'/t0Img.mha'))
-        transformixImageFilter.SetFixedPointSetFileName(savePath+'/input0.pts')
-        transformixImageFilter.SetOutputDirectory(savePath)
-        transformixImageFilter.Execute()
+    if forwardbackward:
+        np.savetxt(savePath+'/input.pts',newPos,header='point\n'+str(len(oriPos)),comments='')
+        forward=[]
+        for n in range(timeStepNo-1):
+            fromTime=startTime+n
+            if fromTime>=timeStepNo:
+                fromTime-=timeStepNo
+            toTime=fromTime+1
+            if toTime>=timeStepNo:
+                toTime-=timeStepNo
+            Tmap=[]#SimpleITK.VectorOfParameterMap()
+            for m in range(mapNo):
+                Tmap.append(sitk.ReadParameterFile(TmapPath+'/transform/t'+str(fromTime)+'to'+str(toTime)+'_'+str(m)+'.txt'))
 
-        with open (savePath+'/outputpoints.txt', "r") as myfile:
-            data=myfile.readlines()
-        newPos=[]
-        for string in data:
-            result = re.search('OutputPoint(.*)Deformation', string)
-            newPos.append(np.fromstring(result.group(1)[5:-6], sep=' '))
-        newPos=np.array(newPos)
-        addSaveStr=''
-        if cumulative:
-            addSaveStr='_cumulative'
-            if n>1 and n<(timeStepNo-1):
-                ratio=ratioFunc(n,timeStepNo)
-                Tmap=[]#SimpleITK.VectorOfParameterMap()
-                for m in range(mapNo):
-                    Tmap.append(sitk.ReadParameterFile(TmapPath+'/transform/t'+str(n-1)+'to'+str(n)+'_'+str(m)+'.txt'))
-                
-                transformixImageFilter=sitk.TransformixImageFilter()
-                transformixImageFilter.LogToFileOff()
-                transformixImageFilter.LogToConsoleOff()
-                transformixImageFilter.SetTransformParameterMap(Tmap)
-                transformixImageFilter.SetMovingImage(sitk.ReadImage(TmapPath+'/t0Img.mha'))
-                transformixImageFilter.SetFixedPointSetFileName(savePath+'/input.pts')
-                transformixImageFilter.SetOutputDirectory(savePath)
-                transformixImageFilter.Execute()
+            transformixImageFilter=sitk.TransformixImageFilter()
+            transformixImageFilter.LogToFileOff()
+            transformixImageFilter.LogToConsoleOff()
+            transformixImageFilter.SetTransformParameterMap(Tmap)
+            transformixImageFilter.SetMovingImage(sitk.ReadImage(TmapPath+'/t0Img.mha'))
+            transformixImageFilter.SetFixedPointSetFileName(savePath+'/input.pts')
+            transformixImageFilter.SetOutputDirectory(savePath)
+            transformixImageFilter.Execute()
 
-                with open (savePath+'/outputpoints.txt', "r") as myfile:
-                    data=myfile.readlines()
-                newPos2=[]
-                for string in data:
-                    result = re.search('OutputPoint(.*)Deformation', string)
-                    newPos2.append(np.fromstring(result.group(1)[5:-6], sep=' '))
-                newPos=newPos*(1.-ratio)+(ratio)*np.array(newPos2)
+            with open (savePath+'/outputpoints.txt', "r") as myfile:
+                data=myfile.readlines()
+            newPos=[]
+            for string in data:
+                result = re.search('OutputPoint(.*)Deformation', string)
+                newPos.append(np.fromstring(result.group(1)[5:-6], sep=' '))
+            newPos=np.array(newPos)
+            forward=[newPos.copy()]
             np.savetxt(savePath+'/input.pts',newPos,header='point\n'+str(len(newPos)),comments='')
-        if stlFile[-3:]=='stl':
-            ref_mesh.vertices=np.array(newPos)*scale
-            trimesh.io.export.export_mesh(ref_mesh,savePath+'/t'+str(n)+addSaveStr+'.stl')
-        else:
-            np.savetxt(savePath+'/t'+str(n)+addSaveStr+'.txt',np.array(newPos)*scale)
+        np.savetxt(savePath+'/input.pts',newPos,header='point\n'+str(len(oriPos)),comments='')
+        backward=[]
+        for n in range(timeStepNo-1):
+            fromTime=startTime-n
+            if fromTime<0:
+                fromTime+=timeStepNo
+            toTime=fromTime-1
+            if toTime<0:
+                toTime+=timeStepNo
+            Tmap=[]#SimpleITK.VectorOfParameterMap()
+            for m in range(mapNo):
+                Tmap.append(sitk.ReadParameterFile(TmapPath+'/transform/t'+str(fromTime)+'to'+str(toTime)+'_'+str(m)+'.txt'))
+
+            transformixImageFilter=sitk.TransformixImageFilter()
+            transformixImageFilter.LogToFileOff()
+            transformixImageFilter.LogToConsoleOff()
+            transformixImageFilter.SetTransformParameterMap(Tmap)
+            transformixImageFilter.SetMovingImage(sitk.ReadImage(TmapPath+'/t0Img.mha'))
+            transformixImageFilter.SetFixedPointSetFileName(savePath+'/input.pts')
+            transformixImageFilter.SetOutputDirectory(savePath)
+            transformixImageFilter.Execute()
+
+            with open (savePath+'/outputpoints.txt', "r") as myfile:
+                data=myfile.readlines()
+            newPos=[]
+            for string in data:
+                result = re.search('OutputPoint(.*)Deformation', string)
+                newPos.append(np.fromstring(result.group(1)[5:-6], sep=' '))
+            newPos=np.array(newPos)
+            backward=[newPos.copy()]
+            np.savetxt(savePath+'/input.pts',newPos,header='point\n'+str(len(newPos)),comments='')
+        ratio=1./(1.+np.arange(1,timeStepNo)/np.arange(timeStepNo-1,0,-1))
+        backward=backward[::-1]
+        allPos=[oriPos.copy()]
+        for n in range(timeStepNo-1):
+            toTime=startTime+n+1
+            if toTime>=timeStepNo:
+                toTime-=timeStepNo
+            allPos.append(forward[n]*ratio[n]+(1-ratio[n])*backward[n])
+            if stlFile[-3:]=='stl':
+                ref_mesh.vertices=np.array(allPos[-1])*scale
+                trimesh.io.export.export_mesh(ref_mesh,savePath+'/t'+str(toTime)+addSaveStr+'.stl')
+            else:
+                np.savetxt(savePath+'/t'+str(toTime)+addSaveStr+'.txt',np.array(allPos[-1])*scale)
+    else:
+        for n in range(timeStepNo-1):
+            fromTime=startTime+n
+            if fromTime>=timeStepNo:
+                fromTime-=timeStepNo
+            toTime=fromTime+1
+            if toTime>=timeStepNo:
+                toTime-=timeStepNo
+            Tmap=[]#SimpleITK.VectorOfParameterMap()
+            for m in range(mapNo):
+                Tmap.append(sitk.ReadParameterFile(TmapPath+'/transform/t0to'+str(toTime)+'_'+str(m)+'.txt'))
+
+            transformixImageFilter=sitk.TransformixImageFilter()
+            transformixImageFilter.LogToFileOff()
+            transformixImageFilter.LogToConsoleOff()
+            transformixImageFilter.SetTransformParameterMap(Tmap)
+            transformixImageFilter.SetMovingImage(sitk.ReadImage(TmapPath+'/t0Img.mha'))
+            transformixImageFilter.SetFixedPointSetFileName(savePath+'/input0.pts')
+            transformixImageFilter.SetOutputDirectory(savePath)
+            transformixImageFilter.Execute()
+
+            with open (savePath+'/outputpoints.txt', "r") as myfile:
+                data=myfile.readlines()
+            newPos=[]
+            for string in data:
+                result = re.search('OutputPoint(.*)Deformation', string)
+                newPos.append(np.fromstring(result.group(1)[5:-6], sep=' '))
+            newPos=np.array(newPos)
+            addSaveStr=''
+            if cumulative:
+                addSaveStr='_cumulative'
+                if n>0 and n<(timeStepNo-2):
+                    ratio=ratioFunc(n+1,timeStepNo)
+                    Tmap=[]#SimpleITK.VectorOfParameterMap()
+                    for m in range(mapNo):
+                        Tmap.append(sitk.ReadParameterFile(TmapPath+'/transform/t'+str(fromTime)+'to'+str(toTime)+'_'+str(m)+'.txt'))
+
+                    transformixImageFilter=sitk.TransformixImageFilter()
+                    transformixImageFilter.LogToFileOff()
+                    transformixImageFilter.LogToConsoleOff()
+                    transformixImageFilter.SetTransformParameterMap(Tmap)
+                    transformixImageFilter.SetMovingImage(sitk.ReadImage(TmapPath+'/t0Img.mha'))
+                    transformixImageFilter.SetFixedPointSetFileName(savePath+'/input.pts')
+                    transformixImageFilter.SetOutputDirectory(savePath)
+                    transformixImageFilter.Execute()
+
+                    with open (savePath+'/outputpoints.txt', "r") as myfile:
+                        data=myfile.readlines()
+                    newPos2=[]
+                    for string in data:
+                        result = re.search('OutputPoint(.*)Deformation', string)
+                        newPos2.append(np.fromstring(result.group(1)[5:-6], sep=' '))
+                    newPos=newPos*(1.-ratio)+(ratio)*np.array(newPos2)
+                np.savetxt(savePath+'/input.pts',newPos,header='point\n'+str(len(newPos)),comments='')
+            if stlFile[-3:]=='stl':
+                ref_mesh.vertices=np.array(newPos)*scale
+                trimesh.io.export.export_mesh(ref_mesh,savePath+'/t'+str(toTime)+addSaveStr+'.stl')
+            else:
+                np.savetxt(savePath+'/t'+str(toTime)+addSaveStr+'.txt',np.array(newPos)*scale)
 def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scale=1.,delimiter=' '):
     if savePath=='':
         savePath=stlFile[:-4]

@@ -59,7 +59,7 @@ History:
                                                               -in functions with SimpleITK image registration, add maskArray input
     Author: w.x.chan@gmail.com         05MAR2020           - v2.5.1
                                                               -in SAC, sanitise data to 'uint8'
-    Author: w.x.chan@gmail.com         05MAR2020           - v2.5.4
+    Author: w.x.chan@gmail.com         05MAR2020           - v2.5.5
                                                               -in transform, added forwardbackward and change default startTime from 1 to 0,
                                                               
 Requirements:
@@ -72,7 +72,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.5.4'
+_version='2.5.5'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1635,6 +1635,7 @@ def transform(stlFile,timeStepNo,mapNo,startTime=0,cumulative=True,ratioFunc=tim
         oriPos=np.loadtxt(stlFile,delimiter=delimiter)/scale
     np.savetxt(savePath+'/input0.pts',oriPos,header='point\n'+str(len(oriPos)),comments='')
     if forwardbackward:
+        addSaveStr='_forwardbackward'
         np.savetxt(savePath+'/input.pts',oriPos,header='point\n'+str(len(oriPos)),comments='')
         forward=[]
         for n in range(timeStepNo-1):

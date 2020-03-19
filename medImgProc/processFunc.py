@@ -59,7 +59,7 @@ History:
                                                               -in functions with SimpleITK image registration, add maskArray input
     Author: w.x.chan@gmail.com         05MAR2020           - v2.5.1
                                                               -in SAC, sanitise data to 'uint8'
-    Author: w.x.chan@gmail.com         05MAR2020           - v2.5.5
+    Author: w.x.chan@gmail.com         05MAR2020           - v2.5.6
                                                               -in transform, added forwardbackward and change default startTime from 1 to 0,
                                                               
 Requirements:
@@ -72,7 +72,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.5.5'
+_version='2.5.6'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1665,7 +1665,7 @@ def transform(stlFile,timeStepNo,mapNo,startTime=0,cumulative=True,ratioFunc=tim
                 result = re.search('OutputPoint(.*)Deformation', string)
                 newPos.append(np.fromstring(result.group(1)[5:-6], sep=' '))
             newPos=np.array(newPos)
-            forward=[newPos.copy()]
+            forward.append(newPos.copy())
             np.savetxt(savePath+'/input.pts',newPos,header='point\n'+str(len(newPos)),comments='')
         np.savetxt(savePath+'/input.pts',oriPos,header='point\n'+str(len(oriPos)),comments='')
         backward=[]
@@ -1696,21 +1696,20 @@ def transform(stlFile,timeStepNo,mapNo,startTime=0,cumulative=True,ratioFunc=tim
                 result = re.search('OutputPoint(.*)Deformation', string)
                 newPos.append(np.fromstring(result.group(1)[5:-6], sep=' '))
             newPos=np.array(newPos)
-            backward=[newPos.copy()]
+            backward.append(newPos.copy())
             np.savetxt(savePath+'/input.pts',newPos,header='point\n'+str(len(newPos)),comments='')
         ratio=1./(1.+np.arange(1,timeStepNo)/np.arange(timeStepNo-1,0,-1))
         backward=backward[::-1]
-        allPos=[oriPos.copy()]
         for n in range(timeStepNo-1):
             toTime=startTime+n+1
             if toTime>=timeStepNo:
                 toTime-=timeStepNo
-            allPos.append(forward[n]*ratio[n]+(1-ratio[n])*backward[n])
+            newPos=forward[n]*ratio[n]+(1-ratio[n])*backward[n]
             if stlFile[-3:]=='stl':
-                ref_mesh.vertices=np.array(allPos[-1])*scale
+                ref_mesh.vertices=np.array(newPos)*scale
                 trimesh.io.export.export_mesh(ref_mesh,savePath+'/t'+str(toTime)+addSaveStr+'.stl')
             else:
-                np.savetxt(savePath+'/t'+str(toTime)+addSaveStr+'.txt',np.array(allPos[-1])*scale)
+                np.savetxt(savePath+'/t'+str(toTime)+addSaveStr+'.txt',np.array(newPos)*scale)
     else:
         for n in range(timeStepNo-1):
             fromTime=startTime+n

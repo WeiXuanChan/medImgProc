@@ -61,6 +61,8 @@ History:
                                                               -in SAC, sanitise data to 'uint8'
     Author: w.x.chan@gmail.com         05MAR2020           - v2.5.6
                                                               -in transform, added forwardbackward and change default startTime from 1 to 0,
+    Author: w.x.chan@gmail.com         19MAR2020           - v2.5.7
+                                                              -in compound, bound image data before change type to 'uint8'
                                                               
 Requirements:
     numpy.py
@@ -72,7 +74,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.5.6'
+_version='2.5.7'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -2598,7 +2600,7 @@ def compound(image,scheme='mean',schemeArgs=None,axis='t',twoD=False,parallel=Tr
             schemeArgs=0.5
             
         SCAfunc=SAC(schemeArgs,returnStats=returnStats)
-        image.data=np.minimum(255,np.maximum(0,image.data.astype('uint8')))
+        image.data=np.minimum(255,np.maximum(0,image.data)).astype('uint8')
         resultData=image.data.reshape((-1,image.data.shape[-1]),order='F')
         if twoD:
             for xn in range(image.data.shape[0]):

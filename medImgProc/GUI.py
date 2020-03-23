@@ -17,7 +17,7 @@ Author: w.x.chan@gmail.com           10Jan2020           - v2.3.9
                                                               -debug function show() in image2DGUI
 Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
                                                               -debug keypress switch frame of rgb image
-Author: w.x.chan@gmail.com           12Jan2020           - v2.6.0
+Author: w.x.chan@gmail.com           23MAR2020           - v2.6.0
                                                               -added color contour 
 Requirements:
     numpy.py

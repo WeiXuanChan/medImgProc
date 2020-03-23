@@ -17,7 +17,7 @@ Author: w.x.chan@gmail.com           10Jan2020           - v2.3.9
                                                               -debug function show() in image2DGUI
 Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
                                                               -debug keypress switch frame of rgb image
-Author: w.x.chan@gmail.com           23MAR2020           - v2.6.0
+Author: w.x.chan@gmail.com           23MAR2020           - v2.6.1
                                                               -added color contour 
 Requirements:
     numpy.py
@@ -28,7 +28,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.0'
+_version='2.6.1'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -85,11 +85,6 @@ class image2DGUI:
         if type(imageClass)==str:
             self.image=medImgProc.imread(imageClass)
         self.image=imageClass.clone()
-        if contourImageArray is None:
-            self.contourImage=None
-        else:
-            self.contourImage=imageClass.clone()
-            self.contourImage.data=contourImageArray.astype(bool)
         self.image.data=np.maximum(0,self.image.data)
         self.color=0
         if 'RGB' in self.image.dim:
@@ -105,6 +100,12 @@ class image2DGUI:
         if self.color==1:
             self.addInstruct+='press 1,2,3,.. to toggler color channel and 0 to show all.\n '
             self.colorToggler=[]
+        if contourImageArray is None:
+            self.contourImage=None
+        else:
+            self.contourImage=imageClass.clone()
+            self.contourImage.data[:]=contourImageArray
+            self.contourImage.data=self.contourImage.data.astype(int)
         self.fig=plt.figure(1)
         self.showIndex=[]
         for n in range(len(self.image.data.shape)-self.color):
@@ -347,9 +348,9 @@ class image2DGUI:
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
         if self.contourImage is not None:
             for coll in self.contour:
-                plt.gca().collections.remove(coll)
+                self.fig.gca().collections.remove(coll)
             showContour=getLastTwoDimArray(self.contourImage.data,self.showIndex,color=0)
-            getlevels=np.arange(0.5,showContour.max(),1)
+            getlevels=np.arange(0.5+showContour.min(),showContour.max(),1)
             self.contour=self.ax.contour(showContour,getlevels,linewidths=0.2)
         self.showNewPoints()
         
@@ -413,7 +414,7 @@ class image2DGUI:
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
         if self.contourImage is not None:
             showContour=getLastTwoDimArray(self.contourImage.data,self.showIndex,color=0)
-            getlevels=np.arange(0.5,showContour.max(),1)
+            getlevels=np.arange(0.5+showContour.min(),showContour.max(),1)
             self.contour=self.ax.contour(showContour,getlevels,linewidths=0.2)
         showpoints=getFramePts(self.points,self.showIndex)
         self.ptplt=self.ax.scatter(showpoints[:,-1],showpoints[:,-2],color='r',marker='x')

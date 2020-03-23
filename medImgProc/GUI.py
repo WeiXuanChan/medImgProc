@@ -17,6 +17,8 @@ Author: w.x.chan@gmail.com           10Jan2020           - v2.3.9
                                                               -debug function show() in image2DGUI
 Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
                                                               -debug keypress switch frame of rgb image
+Author: w.x.chan@gmail.com           12Jan2020           - v2.6.0
+                                                              -added color contour 
 Requirements:
     numpy.py
     matplotlib.py
@@ -26,7 +28,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.3.10'
+_version='2.6.0'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -75,7 +77,7 @@ def dimToTitle(dimension,showIndex):
 Main GUI class
 '''
 class image2DGUI:
-    def __init__(self,imageClass,addInstruct='',disable=[],initPointList=None,initLineList=None,manualToleranceRatio=0.05,showNow=True):
+    def __init__(self,imageClass,addInstruct='',disable=[],initPointList=None,initLineList=None,manualToleranceRatio=0.05,showNow=True,contourImageArray=None):
         self.title=None
         self.addInstruct=STD_INSTRUCTIONS
         if addInstruct!='':
@@ -83,13 +85,22 @@ class image2DGUI:
         if type(imageClass)==str:
             self.image=medImgProc.imread(imageClass)
         self.image=imageClass.clone()
+        if contourImageArray is None:
+            self.contourImage=None
+        else:
+            self.contourImage=imageClass.clone()
+            self.contourImage.data=contourImageArray.astype(bool)
         self.image.data=np.maximum(0,self.image.data)
         self.color=0
         if 'RGB' in self.image.dim:
             self.image.rearrangeDim('RGB',False)
+            if self.contourImage is not None:
+                self.contourImage.rearrangeDim('RGB',False)
             self.color=1
         elif 'RGBA' in self.image.dim:
             self.image.rearrangeDim('RGBA',False)
+            if self.contourImage is not None:
+                self.contourImage.rearrangeDim('RGBA',False)
             self.color=1
         if self.color==1:
             self.addInstruct+='press 1,2,3,.. to toggler color channel and 0 to show all.\n '
@@ -309,8 +320,12 @@ class image2DGUI:
         if 'swap' not in self.disable:
             if self.color:
                 transposeIndex=self.image.rearrangeDim([axis,self.image.dim[-1]],arrangeFront=False)
+                if self.contourImage is not None:
+                    self.contourImage.rearrangeDim([axis,self.image.dim[-1]],arrangeFront=False)
             else:
                 transposeIndex=self.image.rearrangeDim([axis],arrangeFront=False)
+                if self.contourImage is not None:
+                    self.contourImage.rearrangeDim([axis],arrangeFront=False)
             newShowIndex=[]
             if self.color:
                 transposeIndex=transposeIndex[:-1]
@@ -330,8 +345,13 @@ class image2DGUI:
         newShowImage=np.maximum(0,np.minimum(255,(newShowImage*self.scaleVisual)**(10.**self.logVisual))).astype('uint8')
         self.main.set_data(newShowImage)
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
+        if self.contourImage is not None:
+            for coll in self.contour:
+                plt.gca().collections.remove(coll)
+            showContour=getLastTwoDimArray(self.contourImage.data,self.showIndex,color=0)
+            getlevels=np.arange(0.5,showContour.max(),1)
+            self.contour=self.ax.contour(showContour,getlevels,linewidths=0.2)
         self.showNewPoints()
-        
         
         pp=plt.setp(self.title,text=self.addInstruct+dimToTitle(self.image.dim[:-2-self.color],self.showIndex[:-2]))
         self.fig.canvas.draw()
@@ -391,7 +411,10 @@ class image2DGUI:
         showImage=np.maximum(0,np.minimum(255,(showImage*self.scaleVisual)**(10.**self.logVisual))).astype('uint8')
         self.main=self.ax.imshow(showImage,cmap=matplotlib.cm.gray, vmin=0, vmax=255)
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
-
+        if self.contourImage is not None:
+            showContour=getLastTwoDimArray(self.contourImage.data,self.showIndex,color=0)
+            getlevels=np.arange(0.5,showContour.max(),1)
+            self.contour=self.ax.contour(showContour,getlevels,linewidths=0.2)
         showpoints=getFramePts(self.points,self.showIndex)
         self.ptplt=self.ax.scatter(showpoints[:,-1],showpoints[:,-2],color='r',marker='x')
         if self.show_line:

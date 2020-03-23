@@ -17,7 +17,7 @@ Author: w.x.chan@gmail.com           10Jan2020           - v2.3.9
                                                               -debug function show() in image2DGUI
 Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
                                                               -debug keypress switch frame of rgb image
-Author: w.x.chan@gmail.com           23MAR2020           - v2.6.1
+Author: w.x.chan@gmail.com           23MAR2020           - v2.6.2
                                                               -added color contour 
 Requirements:
     numpy.py
@@ -28,7 +28,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.1'
+_version='2.6.2'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -347,11 +347,15 @@ class image2DGUI:
         self.main.set_data(newShowImage)
         self.ax.set_aspect(self.image.dimlen[self.image.dim[-2-self.color]]/self.image.dimlen[self.image.dim[-1-self.color]])
         if self.contourImage is not None:
-            for coll in self.contour:
-                self.fig.gca().collections.remove(coll)
+            if self.contour is not None:
+                for coll in self.contour.collections:
+                    self.fig.gca().collections.remove(coll)
             showContour=getLastTwoDimArray(self.contourImage.data,self.showIndex,color=0)
             getlevels=np.arange(0.5+showContour.min(),showContour.max(),1)
-            self.contour=self.ax.contour(showContour,getlevels,linewidths=0.2)
+            if len(getlevels)>0:
+                self.contour=self.ax.contour(showContour,getlevels,linewidths=0.2)
+            else:
+                self.contour=None
         self.showNewPoints()
         
         pp=plt.setp(self.title,text=self.addInstruct+dimToTitle(self.image.dim[:-2-self.color],self.showIndex[:-2]))
@@ -415,7 +419,10 @@ class image2DGUI:
         if self.contourImage is not None:
             showContour=getLastTwoDimArray(self.contourImage.data,self.showIndex,color=0)
             getlevels=np.arange(0.5+showContour.min(),showContour.max(),1)
-            self.contour=self.ax.contour(showContour,getlevels,linewidths=0.2)
+            if len(getlevels)>0:
+                self.contour=self.ax.contour(showContour,getlevels,linewidths=0.2)
+            else:
+                self.contour=None
         showpoints=getFramePts(self.points,self.showIndex)
         self.ptplt=self.ax.scatter(showpoints[:,-1],showpoints[:,-2],color='r',marker='x')
         if self.show_line:

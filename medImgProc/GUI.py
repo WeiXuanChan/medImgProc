@@ -19,7 +19,7 @@ Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
                                                               -debug keypress switch frame of rgb image
 Author: w.x.chan@gmail.com           23MAR2020           - v2.6.4
                                                               -added color contour 
-Author: w.x.chan@gmail.com           24MAR2020           - v2.6.5
+Author: w.x.chan@gmail.com           24MAR2020           - v2.6.7
                                                               -allow save image
 Requirements:
     numpy.py
@@ -30,7 +30,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.5'
+_version='2.6.7'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -94,6 +94,12 @@ class image2DGUI:
             self.image=medImgProc.imread(imageClass)
         self.image=imageClass.clone()
         self.image.data=np.maximum(0,self.image.data)
+        if contourImageArray is None:
+            self.contourImage=None
+        else:
+            self.contourImage=imageClass.clone()
+            self.contourImage.data[:]=contourImageArray
+            self.contourImage.data=self.contourImage.data.astype(int)
         self.color=0
         if 'RGB' in self.image.dim:
             self.image.rearrangeDim('RGB',False)
@@ -108,12 +114,6 @@ class image2DGUI:
         if self.color==1:
             self.addInstruct+='press 1,2,3,.. to toggler color channel and 0 to show all.\n '
             self.colorToggler=[]
-        if contourImageArray is None:
-            self.contourImage=None
-        else:
-            self.contourImage=imageClass.clone()
-            self.contourImage.data[:]=contourImageArray
-            self.contourImage.data=self.contourImage.data.astype(int)
         self.fig=plt.figure(1)
         self.showIndex=[]
         for n in range(len(self.image.data.shape)-self.color):

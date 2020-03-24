@@ -17,7 +17,7 @@ Author: w.x.chan@gmail.com           10Jan2020           - v2.3.9
                                                               -debug function show() in image2DGUI
 Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
                                                               -debug keypress switch frame of rgb image
-Author: w.x.chan@gmail.com           23MAR2020           - v2.6.3
+Author: w.x.chan@gmail.com           23MAR2020           - v2.6.4
                                                               -added color contour 
 Requirements:
     numpy.py
@@ -28,7 +28,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.3'
+_version='2.6.4'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -353,7 +353,7 @@ class image2DGUI:
             showContour=getLastTwoDimArray(self.contourImage.data,self.showIndex,color=0)
             getlevels=np.arange(0.5+showContour.min(),showContour.max(),1)
             if len(getlevels)>0:
-                self.contour=self.ax.contour(showContour,getlevels,linewidths=0.2)
+                self.contour=self.ax.contour(showContour,getlevels,linewidths=1.2)
             else:
                 self.contour=None
         self.showNewPoints()
@@ -420,7 +420,7 @@ class image2DGUI:
             showContour=getLastTwoDimArray(self.contourImage.data,self.showIndex,color=0)
             getlevels=np.arange(0.5+showContour.min(),showContour.max(),1)
             if len(getlevels)>0:
-                self.contour=self.ax.contour(showContour,getlevels,linewidths=0.2)
+                self.contour=self.ax.contour(showContour,getlevels,linewidths=1.2)
             else:
                 self.contour=None
         showpoints=getFramePts(self.points,self.showIndex)

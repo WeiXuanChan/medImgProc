@@ -19,7 +19,7 @@ Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
                                                               -debug keypress switch frame of rgb image
 Author: w.x.chan@gmail.com           23MAR2020           - v2.6.4
                                                               -added color contour 
-Author: w.x.chan@gmail.com           24MAR2020           - v2.6.7
+Author: w.x.chan@gmail.com           24MAR2020           - v2.6.11
                                                               -allow save image
 Requirements:
     numpy.py
@@ -30,7 +30,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.7'
+_version='2.6.11'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -302,7 +302,8 @@ class image2DGUI:
         tempdir = filedialog.asksaveasfilename(parent=root, initialdir=os.getcwd(), title='Save Image '+fileName+' as')
         if tempdir[-4]!='.png':
             tempdir+='.png'
-        self.fig.savefig(tempdir+'.png', bbox_inches=extent)
+        self.fig.savefig(tempdir, bbox_inches=extent)
+        root.destroy()
     def togger_line(self,event):
         self.show_line=not(self.show_line)
         if not(self.show_line):

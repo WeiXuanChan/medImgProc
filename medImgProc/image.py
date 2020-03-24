@@ -30,7 +30,7 @@ History:
                                                             -debug when imageio.get_reader does not have 'nframes'
   Author: w.x.chan@gmail.com         15JAN2020           - v2.4.1
                                                             -debug change video format to block size
-  Author: w.x.chan@gmail.com         24MAR2020           - v2.6.8
+  Author: w.x.chan@gmail.com         24MAR2020           - v2.6.9
                                                             -change boolean image to contour
                                                             
   
@@ -43,12 +43,13 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.8'
+_version='2.6.9'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 from scipy.interpolate import interp1d
+from scipy.ndimage import shift
 import matplotlib.pyplot as plt
 import os
 import matplotlib

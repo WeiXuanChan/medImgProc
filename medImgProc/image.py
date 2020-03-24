@@ -30,7 +30,7 @@ History:
                                                             -debug when imageio.get_reader does not have 'nframes'
   Author: w.x.chan@gmail.com         15JAN2020           - v2.4.1
                                                             -debug change video format to block size
-  Author: w.x.chan@gmail.com         24MAR2020           - v2.6.9
+  Author: w.x.chan@gmail.com         24MAR2020           - v2.6.10
                                                             -change boolean image to contour
                                                             
   
@@ -43,7 +43,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.9'
+_version='2.6.10'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -123,7 +123,7 @@ def boolToContour(imageClass,shiftPixel):
             if shiftPixel[n]!=0:
                 toShift=np.zeros(len(imageClass.data.shape))
                 toShift[n]+=shiftPixel[n]
-                resultArray+=np.abs(shift(imageArray,toShift,mode='reflect')-shift(imageArray,-toShift,mode='reflect'))
+                resultArray+=np.abs(shift(imageClass.data,toShift,mode='reflect')-shift(imageClass.data,-toShift,mode='reflect'))
         resultArray[resultArray<0.5]=0
         resultArray[resultArray>=0.5]=255
         imageClass.data=resultArray

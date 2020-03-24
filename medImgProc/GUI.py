@@ -19,7 +19,7 @@ Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
                                                               -debug keypress switch frame of rgb image
 Author: w.x.chan@gmail.com           23MAR2020           - v2.6.4
                                                               -added color contour 
-Author: w.x.chan@gmail.com           23MAR2020           - v2.6.5
+Author: w.x.chan@gmail.com           24MAR2020           - v2.6.5
                                                               -allow save image
 Requirements:
     numpy.py

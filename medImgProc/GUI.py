@@ -19,7 +19,7 @@ Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
                                                               -debug keypress switch frame of rgb image
 Author: w.x.chan@gmail.com           23MAR2020           - v2.6.4
                                                               -added color contour 
-Author: w.x.chan@gmail.com           24MAR2020           - v2.6.11
+Author: w.x.chan@gmail.com           24MAR2020           - v2.6.12
                                                               -allow save image
 Requirements:
     numpy.py
@@ -30,7 +30,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.11'
+_version='2.6.12'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -295,15 +295,16 @@ class image2DGUI:
     def save_image(self,event):
         self.ax.axis('off')
         extent = self.ax.get_window_extent().transformed(self.fig.dpi_scale_trans.inverted())
+        maxdpi=max(self.image.data.shape[-2-self.color]/extent.height,self.image.data.shape[-1-self.color]/extent.width)
         root = tkinter.Tk()
         fileName=root.withdraw()
         fileName=''.join(self.image.dim[(-2-self.color):][:2])
         for dimN in range(len(self.image.dim)-2-self.color):
             fileName+='_'+self.image.dim[dimN]+str(self.showIndex[dimN])
         tempdir = filedialog.asksaveasfilename(parent=root, initialdir=os.getcwd(), title='Save Image '+fileName+' as')
-        if tempdir[-4]!='.png':
+        if tempdir[-4:]!='.png':
             tempdir+='.png'
-        self.fig.savefig(tempdir, bbox_inches=extent)
+        self.fig.savefig(tempdir, bbox_inches=extent,dpi=maxdpi)
         root.destroy()
         self.ax.axis('on')
     def togger_line(self,event):

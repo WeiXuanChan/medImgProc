@@ -152,9 +152,9 @@ History:
                                                             -Image v2.4.1
                                                             -GUI v2.3.10
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         24Mar2020           - v2.6.7 - in combine, transfer boolean image to contour 
+  Author: w.x.chan@gmail.com         24Mar2020           - v2.6.8 - in combine, transfer boolean image to contour 
                                                             -processFunc v2.5.7
-                                                            -Image v2.4.1
+                                                            -Image v2.6.8
                                                             -GUI v2.6.7
                                                             -pointSpeckleProc v2.4.0
 
@@ -169,7 +169,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.6.7'
+_version='2.6.8'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 
@@ -217,19 +217,6 @@ def stretch(imageClass,stretchDim,scheme=image.DEFAULT_INTERPOLATION_SCHEME):
     newImage=imageClass.clone()
     newImage.stretch(stretchDim,scheme=scheme)
     return newImage
-def boolToContour(imageArray):
-    if imageArray.dtype!=bool:
-        return imageArray.copy()
-    imageArray=imageArray.astype(float)
-    toShift=np.zeros(len(imageArray.shape))
-    toShift[0]=0.5
-    resultArray=np.zeros(imageArray.shape)
-    for n in range(len(imageArray.shape)):
-        resultArray+=np.abs(shift(imageArray,toShift,mode='reflect')-shift(imageArray,-toShift,mode='reflect'))
-        toShift=np.roll(toShift,1)
-    resultArray[resultArray<0.5]=0
-    resultArray[resultArray>=0.5]=255
-    return resultArray
 def save(imageClass,filePath):
     imageClass.save(filePath)
 def load(filePath):
@@ -341,19 +328,24 @@ def combine(img1,img2,img3=None,point=False):
     #img1 is main image
     img=img1.clone()
     if img1.data.dtype==bool:
-        img.data=boolToContour(img1.data)
+        img.changeBooleanToContour()
     img.changeColorFormat()
     if type(img3)!=type(None):
-        if img1.data.dtype==bool:
-            func=boolToContour
-        img.data[...,1]=boolToContour(img2.data)
-        img.data[...,2]=boolToContour(img3.data)
+        if img2.data.dtype==bool:
+            img2=img2.clone()
+            img2.changeBooleanToContour()
+        if img3.data.dtype==bool:
+            img3=img3.clone()
+            img3.changeBooleanToContour()
+        img.data[...,1]=img2.data.copy()
+        img.data[...,2]=img3.data.copy()
     elif point:
         img.data[...,0][img2.data>0]=img2.data[img2.data>0]
         img.data[...,1][img2.data>0]=255
         img.data[...,2][img2.data>0]=0
-    elif img2.data.dtype==bool:
-        img.data[...,0]=boolToContour(img2.data)
     else:
+        if img2.data.dtype==bool:
+            img2=img2.clone()
+            img2.changeBooleanToContour()
         img.data[...,0]=np.maximum(img2.data,img1.data)
     return img

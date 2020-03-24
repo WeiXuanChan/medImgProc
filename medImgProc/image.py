@@ -30,6 +30,8 @@ History:
                                                             -debug when imageio.get_reader does not have 'nframes'
   Author: w.x.chan@gmail.com         15JAN2020           - v2.4.1
                                                             -debug change video format to block size
+  Author: w.x.chan@gmail.com         24MAR2020           - v2.6.8
+                                                            -change boolean image to contour
                                                             
   
 Requirements:
@@ -41,7 +43,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.4.1'
+_version='2.6.8'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -73,7 +75,7 @@ DEFAULT_SEGMENTATION_DIMENSION=('t','z','y','x')
 DEFAULT_INTERPOLATION_SCHEME=interpolationScheme.linearEquation
 ZEROTHORDER_INTERPOLATION_SCHEME=interpolationScheme.nearestValue
 HINT_DIMENSION_LIST='Invalid Dimension.\n Please input accurate dimension list with:\n dimension=[str,str,...]'
-COLOR_DIMENSION=('RGB','HSV')
+COLOR_DIMENSION=('RGB','RGBA','HSV')
 '''
 Internal use functions
 '''
@@ -89,13 +91,13 @@ def dataInColorFormat(imageClass,colorFormat):
     Return image with color base on colorFormat
     '''
     if colorFormat in imageClass.dim:
-        logger.warning('Error: Image is already in '+colorFormat+' color format.')
+        logger.warning('Image is already in '+colorFormat+' color format.')
     elif colorFormat=='RGB':
         dimAcsCount=list(range(1,len(imageClass.data.shape)+1))
         imageArray=np.array([imageClass.data[:],imageClass.data[:],imageClass.data[:]])
         return imageArray.transpose(*dimAcsCount,0)
     else:
-        logger.warning('Error: color format is not supported.')
+        logger.warning('color format is not supported.')
 def dataInGreyscaleFormat(imageClass):
     '''
     Return greyscale image:
@@ -106,7 +108,24 @@ def dataInGreyscaleFormat(imageClass):
         imageArrayWithColorFirst=imageClass.data.transpose(RGBFirstIndex)
         return np.mean(imageArrayWithColorFirst,axis=0)
     else:
-        logger.warning('Error: Image is already in greyscale format or format not supported.')
+        logger.warning('Image is already in greyscale format or format not supported.')
+def boolToContour(imageClass,shiftPixel):
+    if imageClass.data.dtype!=bool:
+        logger.warning('Image is not in boolean format. Scaling intensities')
+    imageClass.data=imageClass.data.astype(float)
+    if imageClass.data.max()==imageClass.data.min():
+        logger.warning('Uniform Image.')
+    else:
+        imageClass.data=(imageClass.data-imageClass.data.min())/(imageClass.data.max()-imageClass.data.min())
+        resultArray=np.zeros(imageClass.data.shape)
+        for n in range(len(shiftPixel)):
+            if shiftPixel[n]!=0:
+                toShift=np.zeros(len(imageClass.data.shape))
+                toShift[n]+=shiftPixel[n]
+                resultArray+=np.abs(shift(imageArray,toShift,mode='reflect')-shift(imageArray,-toShift,mode='reflect'))
+        resultArray[resultArray<0.5]=0
+        resultArray[resultArray>=0.5]=255
+        imageClass.data=resultArray
 def datatypeMinMax(dtype):
     maxI=float('inf')
     minI=float('-inf')
@@ -708,6 +727,34 @@ class image:
         if new_data is not None:
             self.data=new_data
             self.dim.remove(colorFormat)
+    def changeBooleanToContour(self,dimShift=None):
+        if dimShift is None:
+            dim=self.dim.copy()
+            if dim[-1] in COLOR_DIMENSION:
+                dim.pop(-1)
+        elif isinstance(dimShift,list):
+            dim=dimShift.copy()
+        if isinstance(dimShift,dict):
+            shiftPixel=[]
+            for key in self.dim:
+                if key in dimShift:
+                    shiftPixel.append(dimShift[key])
+                else:
+                    shiftPixel.append(0)
+        else:
+            min_dimlen=float('inf')
+            for key in dim:
+                temp_dimlen=self.dimlen[key]
+                if temp_dimlen<min_dimlen:
+                    min_dimlen=temp_dimlen
+            shiftPixel=[]
+            min_dimlen*=0.5
+            for key in self.dim:
+                if key in dim:
+                    shiftPixel.append(min_dimlen/self.dimlen[key])
+                else:
+                    shiftPixel.append(0)
+        boolToContour(self,shiftPixel)
     def invert(self):
         minI,maxI=datatypeMinMax(self.dtype)
         self.data=maxI+minI-self.data

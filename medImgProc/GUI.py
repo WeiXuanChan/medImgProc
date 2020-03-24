@@ -293,6 +293,7 @@ class image2DGUI:
         else:
             logger.info(event.key)
     def save_image(self,event):
+        self.ax.axis('off')
         extent = self.ax.get_window_extent().transformed(self.fig.dpi_scale_trans.inverted())
         root = tkinter.Tk()
         fileName=root.withdraw()
@@ -304,6 +305,7 @@ class image2DGUI:
             tempdir+='.png'
         self.fig.savefig(tempdir, bbox_inches=extent)
         root.destroy()
+        self.ax.axis('on')
     def togger_line(self,event):
         self.show_line=not(self.show_line)
         if not(self.show_line):

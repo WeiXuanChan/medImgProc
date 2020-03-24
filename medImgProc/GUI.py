@@ -19,6 +19,8 @@ Author: w.x.chan@gmail.com           12Jan2020           - v2.3.10
                                                               -debug keypress switch frame of rgb image
 Author: w.x.chan@gmail.com           23MAR2020           - v2.6.4
                                                               -added color contour 
+Author: w.x.chan@gmail.com           23MAR2020           - v2.6.5
+                                                              -allow save image
 Requirements:
     numpy.py
     matplotlib.py
@@ -28,7 +30,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.4'
+_version='2.6.5'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -38,6 +40,12 @@ from matplotlib.widgets import Slider
 from matplotlib.widgets import Button
 from scipy import interpolate
 #matplotlib.rc('text', usetex=True)
+try:
+    import tkinter
+    from tkinter import filedialog
+    import os
+except:
+    pass
 '''
 variables
 '''
@@ -284,6 +292,17 @@ class image2DGUI:
             self.swapFrame(event.key)
         else:
             logger.info(event.key)
+    def save_image(self,event):
+        extent = self.ax.get_window_extent().transformed(self.fig.dpi_scale_trans.inverted())
+        root = tkinter.Tk()
+        fileName=root.withdraw()
+        fileName=''.join(self.image.dim[(-2-self.color):][:2])
+        for dimN in range(len(self.image.dim)-2-self.color):
+            fileName+='_'+self.image.dim[dimN]+str(self.showIndex[dimN])
+        tempdir = filedialog.asksaveasfilename(parent=root, initialdir=os.getcwd(), title='Save Image '+fileName+' as')
+        if tempdir[-4]!='.png':
+            tempdir+='.png'
+        self.fig.savefig(tempdir+'.png', bbox_inches=extent)
     def togger_line(self,event):
         self.show_line=not(self.show_line)
         if not(self.show_line):
@@ -452,7 +471,9 @@ class image2DGUI:
 
         '''set slider for image control'''
         axcolor = 'lightgoldenrodyellow'
-
+        self.saveImageButton=Button(self.fig.add_axes([0.75, 0.02, 0.1, 0.05]), 'Save')
+        self.saveImageButton.on_clicked(self.save_image)
+        
         self.lineControl=[]
         if 'line' not in self.disable:
             self.lineControl.append(Button(self.fig.add_axes([0.05, 0.02, 0.1, 0.05]), 'Line'))

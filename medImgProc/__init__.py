@@ -152,7 +152,7 @@ History:
                                                             -Image v2.4.1
                                                             -GUI v2.3.10
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         24Mar2020           - v2.6.5 - in combine, transfer boolean image to contour 
+  Author: w.x.chan@gmail.com         24Mar2020           - v2.6.6 - in combine, transfer boolean image to contour 
                                                             -processFunc v2.5.7
                                                             -Image v2.4.1
                                                             -GUI v2.6.5
@@ -169,7 +169,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.6.5'
+_version='2.6.6'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 
@@ -177,7 +177,7 @@ logger.info('medImgProc version '+_version)
 import numpy as np
 import os
 import sys
-
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import matplotlib
 if os.environ.get('DISPLAY','')=='' and os.name!='nt':
     logger.warning('no display found. Using non-interactive Agg backend')

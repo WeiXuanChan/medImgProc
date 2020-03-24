@@ -152,7 +152,7 @@ History:
                                                             -Image v2.4.1
                                                             -GUI v2.3.10
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         24Mar2020           - v2.6.5
+  Author: w.x.chan@gmail.com         24Mar2020           - v2.6.5 - in combine, transfer boolean image to contour 
                                                             -processFunc v2.5.7
                                                             -Image v2.4.1
                                                             -GUI v2.6.5
@@ -177,7 +177,7 @@ logger.info('medImgProc version '+_version)
 import numpy as np
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+
 import matplotlib
 if os.environ.get('DISPLAY','')=='' and os.name!='nt':
     logger.warning('no display found. Using non-interactive Agg backend')
@@ -185,6 +185,7 @@ if os.environ.get('DISPLAY','')=='' and os.name!='nt':
 import pickle
 try:
     import scipy.io as sio
+    from scipy.ndimage import shift
 except:
     pass
 
@@ -216,6 +217,19 @@ def stretch(imageClass,stretchDim,scheme=image.DEFAULT_INTERPOLATION_SCHEME):
     newImage=imageClass.clone()
     newImage.stretch(stretchDim,scheme=scheme)
     return newImage
+def boolToContour(imageArray):
+    if imageArray.dtype!=bool:
+        return imageArray.copy()
+    imageArray=imageArray.astype(float)
+    toShift=np.zeros(len(imageArray.shape))
+    toShift[0]=0.5
+    resultArray=np.zeros(imageArray.shape)
+    for n in range(len(imageArray.shape)):
+        resultArray+=np.abs(shift(imageArray,toShift,mode='reflect')-shift(imageArray,-toShift,mode='reflect'))
+        toShift=np.roll(toShift,1)
+    resultArray[resultArray<0.5]=0
+    resultArray[resultArray>=0.5]=255
+    return resultArray
 def save(imageClass,filePath):
     imageClass.save(filePath)
 def load(filePath):
@@ -322,17 +336,24 @@ def loadmat(fileName,arrayName='',dim=[],dimlen={},dtype=None):
     return newImage
 def show(imageClass):
     imageClass.show()
+
 def combine(img1,img2,img3=None,point=False):
     #img1 is main image
     img=img1.clone()
+    if img1.data.dtype==bool:
+        img.data=boolToContour(img1.data)
     img.changeColorFormat()
     if type(img3)!=type(None):
-        img.data[...,1]=img2.data.copy()
-        img.data[...,2]=img3.data.copy()
+        if img1.data.dtype==bool:
+            func=boolToContour
+        img.data[...,1]=boolToContour(img2.data)
+        img.data[...,2]=boolToContour(img3.data)
     elif point:
         img.data[...,0][img2.data>0]=img2.data[img2.data>0]
         img.data[...,1][img2.data>0]=255
         img.data[...,2][img2.data>0]=0
+    elif img2.data.dtype==bool:
+        img.data[...,0]=boolToContour(img2.data)
     else:
         img.data[...,0]=np.maximum(img2.data,img1.data)
     return img

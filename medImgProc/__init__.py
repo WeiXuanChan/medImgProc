@@ -183,9 +183,9 @@ if os.environ.get('DISPLAY','')=='' and os.name!='nt':
     logger.warning('no display found. Using non-interactive Agg backend')
     matplotlib.use('Agg')
 import pickle
+from scipy.ndimage import shift
 try:
     import scipy.io as sio
-    from scipy.ndimage import shift
 except:
     pass
 

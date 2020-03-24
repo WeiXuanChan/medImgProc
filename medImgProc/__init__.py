@@ -152,9 +152,9 @@ History:
                                                             -Image v2.4.1
                                                             -GUI v2.3.10
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         24Mar2020           - v2.6.8 - in combine, transfer boolean image to contour 
+  Author: w.x.chan@gmail.com         24Mar2020           - v2.6.9 - in combine, transfer boolean image to contour 
                                                             -processFunc v2.5.7
-                                                            -Image v2.6.8
+                                                            -Image v2.6.9
                                                             -GUI v2.6.7
                                                             -pointSpeckleProc v2.4.0
 
@@ -169,7 +169,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.6.8'
+_version='2.6.9'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 
@@ -183,7 +183,6 @@ if os.environ.get('DISPLAY','')=='' and os.name!='nt':
     logger.warning('no display found. Using non-interactive Agg backend')
     matplotlib.use('Agg')
 import pickle
-from scipy.ndimage import shift
 try:
     import scipy.io as sio
 except:

@@ -63,6 +63,8 @@ History:
                                                               -in transform, added forwardbackward and change default startTime from 1 to 0,
     Author: w.x.chan@gmail.com         19MAR2020           - v2.5.7
                                                               -in compound, bound image data before change type to 'uint8'
+    Author: w.x.chan@gmail.com         25MAR2020           - v2.6.16
+                                                              -in compound, bound 
                                                               
 Requirements:
     numpy.py
@@ -74,7 +76,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.5.7'
+_version='2.6.16'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -2673,6 +2675,9 @@ def compound(image,scheme='mean',schemeArgs=None,axis='t',twoD=False,parallel=Tr
                 for n in range(1,image.data.shape[-1]):
                     resultCoef[key]+=coef[n][key]/float(image.data.shape[-1])
         resultImage.data=pywt.idwtn(resultCoef,'haar')
+        for n in range(len(resultImage.data.shape)):
+            if resultImage.data.shape[n]!=image.data.shape[n]:
+                resultImage.data=resultImage.data[tuple([slice(None)]*n+[slice(image.data.shape[n])])]
     elif scheme=='maximum':
         resultImage.data=image.data.max(axis=-1)
     elif scheme=='minimum':

@@ -32,7 +32,7 @@ History:
                                                             -debug change video format to block size
   Author: w.x.chan@gmail.com         24MAR2020           - v2.6.10
                                                             -change boolean image to contour
-  Author: w.x.chan@gmail.com         24MAR2020           - v2.6.14
+  Author: w.x.chan@gmail.com         24MAR2020           - v2.6.15
                                                             -save image directly
                                                             
   
@@ -45,7 +45,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.14'
+_version='2.6.15'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -584,7 +584,6 @@ class image:
     Saving data (readable)
     '''
     def imwrite2D(self,filePath,axes=('y','x'),imageFormat='png',dimRange=None,fps=15,color=0):
-        os.makedirs(filePath, exist_ok=True)
         axes=list(axes)
         if type(dimRange)==type(None):
             dimRange={}
@@ -614,6 +613,7 @@ class image:
                 imageio.imwrite(os.path.normpath(filePath),saveData)
             logger.info(str(currentDim))
         else:
+            os.makedirs(filePath, exist_ok=True)
             recursive2DWrite(saveData,currentDim,axes,filePath,imageFormat,dimRange,fps=fps,color=color)
             dimlen_np=[]
             for ti in transposeIndex:

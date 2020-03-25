@@ -32,6 +32,8 @@ History:
                                                             -debug change video format to block size
   Author: w.x.chan@gmail.com         24MAR2020           - v2.6.10
                                                             -change boolean image to contour
+  Author: w.x.chan@gmail.com         24MAR2020           - v2.6.14
+                                                            -save image directly
                                                             
   
 Requirements:
@@ -43,7 +45,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.10'
+_version='2.6.14'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -602,21 +604,23 @@ class image:
         transposeIndex,currentDim=arrangeDim(currentDim,axes,False)
         saveData=saveData.transpose(transposeIndex)
         if len(currentDim)==len(axes):
+            if filePath[-(len(imageFormat)+1):]!=('.'+imageFormat):
+                filePath+='.'+imageFormat
             if len(currentDim)==(3+color):
                 if imageFormat!='gif':
                     saveData=changeArraySizeTo2bitBlocks(saveData,color=color)
-                imageio.mimwrite(os.path.normpath(filePath+'/0.'+imageFormat),saveData,format=imageFormat,fps=fps)
+                imageio.mimwrite(os.path.normpath(filePath),saveData,format=imageFormat,fps=fps)
             elif len(currentDim)==(2+color):
-                imageio.imwrite(os.path.normpath(filePath+'/0.'+imageFormat),saveData)
+                imageio.imwrite(os.path.normpath(filePath),saveData)
             logger.info(str(currentDim))
         else:
             recursive2DWrite(saveData,currentDim,axes,filePath,imageFormat,dimRange,fps=fps,color=color)
-        dimlen_np=[]
-        for ti in transposeIndex:
-            if self.dim[ti] not in ['RGB','RGBA']:
-                dimlen_np.append(self.dimlen[self.dim[ti]])
-        dimlen_np=np.array(dimlen_np)
-        np.savetxt(os.path.normpath(filePath+'/dimensionLength.txt'),dimlen_np)
+            dimlen_np=[]
+            for ti in transposeIndex:
+                if self.dim[ti] not in ['RGB','RGBA']:
+                    dimlen_np.append(self.dimlen[self.dim[ti]])
+            dimlen_np=np.array(dimlen_np)
+            np.savetxt(os.path.normpath(filePath+'/dimensionLength.txt'),dimlen_np)
         logger.info('Image written to: '+filePath)
         #self.save(os.path.normpath(filePath+'/image.mip'))
     def mimwrite2D(self,filePath,axes=('t','y','x'),vidFormat='avi',dimRange=None,fps=15,color=0):

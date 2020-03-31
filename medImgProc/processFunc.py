@@ -65,6 +65,8 @@ History:
                                                               -in compound, bound image data before change type to 'uint8'
     Author: w.x.chan@gmail.com         25MAR2020           - v2.6.16
                                                               -in compound, bound 
+    Author: w.x.chan@gmail.com         31MAR2020           - v2.6.17
+                                                              -in compound, filter out float('nan')
                                                               
 Requirements:
     numpy.py
@@ -76,7 +78,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.16'
+_version='2.6.17'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -2482,6 +2484,7 @@ class SAC:
         self.returnStats=returnStats
     def __call__(self,val):
         val=np.array(val)
+        val=val[np.logical_not(np.isnan(val))]
         val=val[val>=1]
         if len(val)==0:
             if self.returnStats:
@@ -2593,10 +2596,10 @@ def compound(image,scheme='mean',schemeArgs=None,axis='t',twoD=False,parallel=Tr
     resultImage.removeDim(axis)
     if scheme=='mean':
         if type(schemeArgs)==type(None):
-            resultImage.data=image.data.mean(axis=-1)
+            resultImage.data=np.nanmean(image.data,axis=-1)
         else:
             schemeArgs=schemeArgs/np.sum(schemeArgs)
-            resultImage.data=np.sum(image.data*schemeArgs,axis=-1)
+            resultImage.data=np.nansum(image.data*schemeArgs,axis=-1)
     elif scheme=='SAC':
         if type(schemeArgs)==type(None):
             schemeArgs=0.5
@@ -2659,7 +2662,7 @@ def compound(image,scheme='mean',schemeArgs=None,axis='t',twoD=False,parallel=Tr
         
         
     elif scheme=='median':
-        resultImage.data=np.median(image.data,axis=-1)
+        resultImage.data=np.nanmedian(image.data,axis=-1)
     elif scheme=='wavelet':
         coef=[]
         for n in range(image.data.shape[-1]):
@@ -2679,9 +2682,9 @@ def compound(image,scheme='mean',schemeArgs=None,axis='t',twoD=False,parallel=Tr
             if resultImage.data.shape[n]!=image.data.shape[n]:
                 resultImage.data=resultImage.data[tuple([slice(None)]*n+[slice(image.data.shape[n])])]
     elif scheme=='maximum':
-        resultImage.data=image.data.max(axis=-1)
+        resultImage.data=np.nanmax(image.data,axis=-1)
     elif scheme=='minimum':
-        resultImage.data=image.data.min(axis=-1)
+        resultImage.data=np.nanmin(image.data,axis=-1)
     else:
         raise Exception('No Valid Scheme Chosen.')
             

@@ -65,8 +65,8 @@ History:
                                                               -in compound, bound image data before change type to 'uint8'
     Author: w.x.chan@gmail.com         25MAR2020           - v2.6.16
                                                               -in compound, bound 
-    Author: w.x.chan@gmail.com         31MAR2020           - v2.6.17
-                                                              -in compound, filter out float('nan')
+    Author: w.x.chan@gmail.com         31MAR2020           - v2.6.18
+                                                              -in compound, filter out float('nan'),added None for SAC.func to return inliers with outliers being nan
                                                               
 Requirements:
     numpy.py
@@ -78,7 +78,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.17'
+_version='2.6.18'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -2483,21 +2483,27 @@ class SAC:
             raise Exception('Confidence Interval > 1!')
         self.returnStats=returnStats
     def __call__(self,val):
+        if self.func is None:
+            value=np.array([float('nan')]*val.size)
         val=np.array(val)
         val=val[np.logical_not(np.isnan(val))]
         val=val[val>=1]
         if len(val)==0:
-            if self.returnStats:
-                value=np.array([0,0])
-            else:
-                value=0
+            if self.func is not None:
+                if self.returnStats:
+                    value=np.array([0,0])
+                else:
+                    value=0
         elif (val.max()-val.min())<=3:
-            if self.returnStats:
+            if self.func is None:
+                value[:val.size]=val.reshape(-1)
+            elif self.returnStats:
                 value=np.array([self.func(val),0])
             else:
                 value=self.func(val)
         else:
-            value=self.func(val)
+            if self.func is not None:
+                value=self.func(val)
             bincount= np.bincount(np.around(val).astype(int))
             bincountCompressed = bincount[bincount!=0]
             intensityCompresed=np.nonzero(bincount)[0]
@@ -2542,15 +2548,20 @@ class SAC:
                         high=newbound[n,2]
                         low=newbound[n,1]
                         inliersInd=np.logical_and(np.array(val)<=intensityCompresed[high-1],np.array(val)>=intensityCompresed[low])
-                        value=self.func(val[inliersInd])
-                        if self.returnStats:
-                            temp_bincount=bincount.copy()
-                            temp_bincount[intensityCompresed[low]:(intensityCompresed[high-1]+1)]=0
-                            cs=np.insert(np.cumsum(temp_bincount), 0, 0)
-                            cs2=np.roll(cs,-newbound[n,3])
-                            value=np.array([value,np.max(cs2-cs)])
+                        if self.func is None:
+                            value[:val[inliersInd].size]=val[inliersInd].reshape(-1)
+                        else:
+                            value=self.func(val[inliersInd])
+                            if self.returnStats:
+                                temp_bincount=bincount.copy()
+                                temp_bincount[intensityCompresed[low]:(intensityCompresed[high-1]+1)]=0
+                                cs=np.insert(np.cumsum(temp_bincount), 0, 0)
+                                cs2=np.roll(cs,-newbound[n,3])
+                                value=np.array([value,np.max(cs2-cs)])
                         break
-            elif self.returnStats:
+            elif self.func is None:
+                value[:val.size]=val.reshape(-1)
+            if self.returnStats:
                 value=np.array([value,0])
                 
         return value

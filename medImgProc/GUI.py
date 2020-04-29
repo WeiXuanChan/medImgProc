@@ -154,6 +154,7 @@ class image2DGUI:
         if initLineList is not None:
             for line in initLineList:
                 self.lines.append(line.copy())
+            self.show_line=True
                 
         self.axslide=[]
         self.sSlide=[]
@@ -325,6 +326,17 @@ class image2DGUI:
             if len(self.lineplt[self.line_selected])>1:
                 self.lineplt[self.line_selected][1].set_color('b')
         self.line_selected=-1
+    def switch_line(self,event):
+        temp_select=self.line_selected
+        if (len(self.lineplt)-1)<=self.line_selected:
+            self.line_selected=-1
+            if temp_select!=-1:
+                self.showNewLine(temp_select)
+        else:
+            self.line_selected+=1
+            if temp_select!=-1:
+                self.showNewLine(temp_select)
+                self.showNewLine(self.line_selected)
     def del_line(self,event):
         self.line_selected=-2
     def switchFrame(self,index,val=1):
@@ -489,6 +501,8 @@ class image2DGUI:
             self.lineControl[2].on_clicked(self.edit_line)
             self.lineControl.append(Button(self.fig.add_axes([0.5, 0.02, 0.1, 0.05]), 'del...'))
             self.lineControl[3].on_clicked(self.del_line)
+            self.lineControl.append(Button(self.fig.add_axes([0.65, 0.02, 0.1, 0.05]), 'switch'))
+            self.lineControl[4].on_clicked(self.switch_line)
             
         self.axslide=[]
         self.sSlide=[]

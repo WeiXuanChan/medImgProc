@@ -21,6 +21,8 @@ Author: w.x.chan@gmail.com           23MAR2020           - v2.6.4
                                                               -added color contour 
 Author: w.x.chan@gmail.com           24MAR2020           - v2.6.13
                                                               -allow save image
+Author: w.x.chan@gmail.com           29APR2020           - v2.6.19
+                                                              -allow switch line
 Requirements:
     numpy.py
     matplotlib.py
@@ -30,7 +32,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.13'
+_version='2.6.19'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np

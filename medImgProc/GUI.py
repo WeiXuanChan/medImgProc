@@ -330,7 +330,7 @@ class image2DGUI:
         self.line_selected=-1
     def switch_line(self,event):
         temp_select=self.line_selected
-        if (len(self.lineplt)-1)<=self.line_selected:
+        if (len(self.lines)-1)<=self.line_selected:
             self.line_selected=-1
             if temp_select!=-1:
                 self.showNewLine(temp_select)

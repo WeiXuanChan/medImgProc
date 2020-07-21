@@ -67,7 +67,7 @@ History:
                                                               -in compound, bound 
     Author: w.x.chan@gmail.com         31MAR2020           - v2.6.18
                                                               -in compound, filter out float('nan'),added None for SAC.func to return inliers with outliers being nan
-    Author: w.x.chan@gmail.com         21JUL2020           - v2.6.19
+    Author: w.x.chan@gmail.com         21JUL2020           - v2.6.20
                                                               -in registrator: register, added maskArray1 and maskArray2
                                                               
 Requirements:
@@ -80,7 +80,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.19'
+_version='2.6.20'
 
 import logging
 logger = logging.getLogger(__name__)

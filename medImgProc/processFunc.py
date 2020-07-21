@@ -67,6 +67,8 @@ History:
                                                               -in compound, bound 
     Author: w.x.chan@gmail.com         31MAR2020           - v2.6.18
                                                               -in compound, filter out float('nan'),added None for SAC.func to return inliers with outliers being nan
+    Author: w.x.chan@gmail.com         21JUL2020           - v2.6.19
+                                                              -in registrator: register, added maskArray1 and maskArray2
                                                               
 Requirements:
     numpy.py
@@ -78,7 +80,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.18'
+_version='2.6.19'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -2140,7 +2142,7 @@ class registrator:
                 self.Tmap_0=transform
         
         
-    def register(self,image1,image2,initialTransf='',savePath='',regType='rigid',fileName='img2img',metric='rms',nres=6,smoothing=True,outputImage=True):
+    def register(self,image1,image2,initialTransf='',savePath='',regType='rigid',fileName='img2img',metric='rms',nres=6,smoothing=True,outputImage=True,maskArray1=None,maskArray2=None):
         if type(image1)==np.ndarray:
             twoD=len(image1.shape)
             origin1=tuple(np.zeros(twoD))
@@ -2300,6 +2302,17 @@ class registrator:
         
         elastixImageFilter.SetParameterMap(parameterMapVector)
         
+        if maskArray1 is not None:
+            fixMask=sitk.GetImageFromArray(maskArray1.astype(float), isVector=colorVec)
+            fixMask.SetOrigin(origin1)
+            fixMask.SetSpacing(spacing1)
+            elastixImageFilter.SetFixedMask(fixMask)
+        if maskArray2 is not None:
+            movMask=sitk.GetImageFromArray(maskArray2.astype(float), isVector=colorVec)
+            movMask.SetOrigin(origin2)
+            movMask.SetSpacing(spacing2)
+            elastixImageFilter.SetMovingMask(movMask)
+            
         os.makedirs(savePath+'/'+'logFile', exist_ok=True)
         
         elastixImageFilter.SetLogToFile(True)

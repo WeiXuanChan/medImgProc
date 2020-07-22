@@ -67,7 +67,7 @@ History:
                                                               -in compound, bound 
     Author: w.x.chan@gmail.com         31MAR2020           - v2.6.18
                                                               -in compound, filter out float('nan'),added None for SAC.func to return inliers with outliers being nan
-    Author: w.x.chan@gmail.com         21JUL2020           - v2.6.21
+    Author: w.x.chan@gmail.com         21JUL2020           - v2.6.23
                                                               -in registrator: register, added maskArray1 and maskArray2
                                                               
 Requirements:
@@ -80,7 +80,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.21'
+_version='2.6.23'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -2142,7 +2142,7 @@ class registrator:
                 self.Tmap_0=transform
         
         
-    def register(self,image1,image2,initialTransf='',savePath='',regType='rigid',fileName='img2img',metric='rms',nres=6,smoothing=True,outputImage=True,maskArray1=None,maskArray2=None):
+    def register(self,image1,image2,initialTransf='',savePath='',regType='rigid',fileName='img2img',metric='rms',nres=6,smoothing=True,outputImage=True,maskArray1=None,maskArray2=None,elastixLog=False):
         if type(image1)==np.ndarray:
             twoD=len(image1.shape)
             origin1=tuple(np.zeros(twoD))
@@ -2228,8 +2228,12 @@ class registrator:
             colorVec=True
         
         elastixImageFilter=sitk.ElastixImageFilter()
-        elastixImageFilter.LogToFileOff()
-        elastixImageFilter.LogToConsoleOff()
+        if elastixLog:
+            elastixImageFilter.LogToFileOn()
+            elastixImageFilter.LogToConsoleOn()
+        else:
+            elastixImageFilter.LogToFileOff()
+            elastixImageFilter.LogToConsoleOff()
         if type(image1)==np.ndarray:
             x=np.copy(image1)
         else:

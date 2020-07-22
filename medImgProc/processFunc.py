@@ -69,6 +69,8 @@ History:
                                                               -in compound, filter out float('nan'),added None for SAC.func to return inliers with outliers being nan
     Author: w.x.chan@gmail.com         21JUL2020           - v2.6.23
                                                               -in registrator: register, added maskArray1 and maskArray2
+    Author: w.x.chan@gmail.com         22JUL2020           - v2.6.24
+                                                              -in registrator: register, change sampler to RandomSparseMask is mask exist
                                                               
 Requirements:
     numpy.py
@@ -80,7 +82,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.23'
+_version='2.6.24'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -2184,10 +2186,14 @@ class registrator:
         parameterMapVector = sitk.VectorOfParameterMap()
         EulerTransform=sitk.GetDefaultParameterMap("rigid")
         EulerTransform["AutomaticScalesEstimation"]=( "true", ) 
-        EulerTransform["AutomaticTransformInitialization"] = ( "true", ) 
+        EulerTransform["AutomaticTransformInitialization"] = ( "true", )
+        if maskArray1 is not None or maskArray2 is not None:
+            EulerTransform["ImageSampler"]=["RandomSparseMask"]
         affine=sitk.GetDefaultParameterMap("affine")
         affine["AutomaticScalesEstimation"]=( "true", ) 
         affine["AutomaticTransformInitialization"] = ( "true", ) 
+        if maskArray1 is not None or maskArray2 is not None:
+            affine["ImageSampler"]=["RandomSparseMask"]
         
         if metric == 'rms':
             EulerTransform["Metric"]=("AdvancedMeanSquares",)

@@ -34,7 +34,7 @@ History:
                                                             -change boolean image to contour
   Author: w.x.chan@gmail.com         24MAR2020           - v2.6.15
                                                             -save image directly
-  Author: w.x.chan@gmail.com         25AUG2020           - v2.6.21
+  Author: w.x.chan@gmail.com         25AUG2020           - v2.6.25
                                                             -load volume before image
                                                             
   
@@ -47,7 +47,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.21'
+_version='2.6.25'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np

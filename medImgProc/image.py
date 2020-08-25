@@ -34,6 +34,8 @@ History:
                                                             -change boolean image to contour
   Author: w.x.chan@gmail.com         24MAR2020           - v2.6.15
                                                             -save image directly
+  Author: w.x.chan@gmail.com         25AUG2020           - v2.6.21
+                                                            -load volume before image
                                                             
   
 Requirements:
@@ -45,7 +47,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.15'
+_version='2.6.21'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -777,7 +779,7 @@ class image:
         self.data=self.data+shift
     def imread(self,imageFile,dimension=None,fileFormat='',dimlen={},module=''):
         '''
-        Identify input file as Image
+        Try medpy
         '''
         err_msg=''
         if module=='medpy':
@@ -800,25 +802,6 @@ class image:
                         self.dimlen[dimension[dimN]]=img_header.get_voxel_spacing()[dimN]
                 else:
                     self.dimlen=dimlen
-                return
-        try:
-            img=imageio.imread(os.path.normpath(imageFile))
-        except Exception as e:
-                err_msg+='imageio.imread:'+str(e)+'\n'
-        else:
-            dim=len(img.shape)
-            if dimension is None:
-                dimension=list(DEFAULT_IMG_DIMENSION)
-                if img.shape[-1]>4 and len(dimension)==dim:
-                    dimension=list(DEFAULT_VOL_DIMENSION)
-            if len(dimension)<dim:
-                raise Exception('Error loading image file.'+HINT_DIMENSION_LIST)
-            else:
-                self.data=np.array(img)
-                self.dim=dimension[:dim]
-                self.dimlen=dimlen
-                self.dtype=img.dtype
-                self.setDefaultDimlen()
                 return
         '''
         Identify input file as Volume
@@ -843,6 +826,29 @@ class image:
                 self.dtype=img.dtype
                 self.setDefaultDimlen()
                 return
+        '''
+        Identify input file as Image
+        '''
+        try:
+            img=imageio.imread(os.path.normpath(imageFile))
+        except Exception as e:
+                err_msg+='imageio.imread:'+str(e)+'\n'
+        else:
+            dim=len(img.shape)
+            if dimension is None:
+                dimension=list(DEFAULT_IMG_DIMENSION)
+                if img.shape[-1]>4 and len(dimension)==dim:
+                    dimension=list(DEFAULT_VOL_DIMENSION)
+            if len(dimension)<dim:
+                raise Exception('Error loading image file.'+HINT_DIMENSION_LIST)
+            else:
+                self.data=np.array(img)
+                self.dim=dimension[:dim]
+                self.dimlen=dimlen
+                self.dtype=img.dtype
+                self.setDefaultDimlen()
+                return
+        
         '''
         Identify input file as Video
         ''' 

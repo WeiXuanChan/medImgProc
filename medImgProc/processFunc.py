@@ -75,6 +75,8 @@ History:
                                                               -(debug) gradient ascent add self.errThreshold
     Author: w.x.chan@gmail.com         09OCT2020           - v2.6.27
                                                               -gradient ascent add f_val error
+    Author: w.x.chan@gmail.com         09OCT2020           - v2.6.28
+                                                              -gradient ascent, debug finetune_space=0 error
                                                               
 Requirements:
     numpy.py
@@ -86,7 +88,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.27'
+_version='2.6.28'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -229,24 +231,25 @@ class gradient_ascent:
         '''fine tune adjustment by errThreshold'''
         logger.info('fine tuning')
         gradient=self.grad()
-        for count in range(1,self.limitRun):
-            newfVal=[]
-            newPara=[]
-            for n in range(len(gradient)):
-                for m in range(1,self.finetune_space+1):
-                    newPara.append(np.copy(self.para))
-                    if gradient[n]<0:
-                        newPara[-1][n]-=self.errThreshold[n]*self.slope*m
-                    elif gradient[n]>0:
-                        newPara[-1][n]+=self.errThreshold[n]*self.slope*m
-                    newfVal.append(self.func(newPara[-1],*self.args))
-            tryIndex=np.argmax(np.array(newfVal))
-            if (newfVal[tryIndex]*self.slope)>(self.fVal*self.slope) and np.all(np.array(newPara[tryIndex])<=np.array(self.maxPara)) and np.all(np.array(newPara[tryIndex])>=np.array(self.minPara)):
-                self.fVal=newfVal[tryIndex]
-                self.para=np.copy(newPara[tryIndex])
-                gradient=self.grad()
-            else:
-                break
+        if self.finetune_space>0:
+            for count in range(1,self.limitRun):
+                newfVal=[]
+                newPara=[]
+                for n in range(len(gradient)):
+                    for m in range(1,self.finetune_space+1):
+                        newPara.append(np.copy(self.para))
+                        if gradient[n]<0:
+                            newPara[-1][n]-=self.errThreshold[n]*self.slope*m
+                        elif gradient[n]>0:
+                            newPara[-1][n]+=self.errThreshold[n]*self.slope*m
+                        newfVal.append(self.func(newPara[-1],*self.args))
+                tryIndex=np.argmax(np.array(newfVal))
+                if (newfVal[tryIndex]*self.slope)>(self.fVal*self.slope) and np.all(np.array(newPara[tryIndex])<=np.array(self.maxPara)) and np.all(np.array(newPara[tryIndex])>=np.array(self.minPara)):
+                    self.fVal=newfVal[tryIndex]
+                    self.para=np.copy(newPara[tryIndex])
+                    gradient=self.grad()
+                else:
+                    break
         if report<float('inf'):
             logger.info('Final value= '+str(self.fVal)+', with '+str(self.para))
         return np.copy(self.para)

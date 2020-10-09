@@ -152,7 +152,7 @@ optimisation class
 '''
 
 class gradient_ascent:
-    def __init__(self,func,initPara,args=(),gain=None,errThreshold=0.6,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2,normalize_var=False):
+    def __init__(self,func,initPara,args=(),gain=None,errThreshold=0.6,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2,normalize_para=False):
         self.func=func
         self.para=np.array(initPara)
         self.args=args
@@ -172,7 +172,7 @@ class gradient_ascent:
             minPara=np.array([float('-inf')]*self.paraLength)
         self.maxPara=maxPara
         self.minPara=minPara
-        self.normalize_var=normalize_var
+        self.normalize_para=normalize_para
         self.gain=gain
     def run(self,report=float('inf')):
         if report==True:
@@ -201,7 +201,7 @@ class gradient_ascent:
                 break
             #fValtemp=func(self.para,*self.args)
             gradient=self.grad()
-            if self.normalize_var:
+            if self.normalize_para:
                 '''normalize gradient with errThreshold'''
                 gradient=gradient/self.errThreshold[n]
             else:
@@ -281,8 +281,8 @@ class gradient_ascent:
         return np.array(gradient)
     
 class gradient_descent(gradient_ascent):
-    def __init__(self,func,initPara,args=(),gain=None,errThreshold=1.,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2,normalize_var=False):
-        super(gradient_descent, self).__init__(func,initPara,args=args,gain=gain,errThreshold=errThreshold,f_error=f_error,limitRun=limitRun,maxPara=maxPara,minPara=minPara,finetune_space=finetune_space,normalize_var=normalize_var)
+    def __init__(self,func,initPara,args=(),gain=None,errThreshold=1.,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2,normalize_para=False):
+        super(gradient_descent, self).__init__(func,initPara,args=args,gain=gain,errThreshold=errThreshold,f_error=f_error,limitRun=limitRun,maxPara=maxPara,minPara=minPara,finetune_space=finetune_space,normalize_para=normalize_para)
         self.slope=-1.
 '''
 internal functions

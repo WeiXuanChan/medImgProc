@@ -73,6 +73,8 @@ History:
                                                               -in registrator: register, change sampler to RandomSparseMask is mask exist
     Author: w.x.chan@gmail.com         09OCT2020           - v2.6.26
                                                               -(debug) gradient ascent add self.errThreshold
+    Author: w.x.chan@gmail.com         09OCT2020           - v2.6.27
+                                                              -gradient ascent add f_val error
                                                               
 Requirements:
     numpy.py
@@ -84,7 +86,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.26'
+_version='2.6.27'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -141,7 +143,7 @@ optimisation class
 '''
 
 class gradient_ascent:
-    def __init__(self,func,initPara,args=(),gain=None,errThreshold=0.6,limitRun=100,maxPara=None,minPara=None,finetune_space=2):
+    def __init__(self,func,initPara,args=(),gain=None,errThreshold=0.6,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2):
         self.func=func
         self.para=np.array(initPara)
         self.args=args
@@ -154,6 +156,7 @@ class gradient_ascent:
         self.slope=1.
         self.finetune_space=finetune_space
         self.fVal=0.
+        self.f_error=f_error
         if maxPara is None:
             maxPara=np.array([float('inf')]*self.paraLength)
         if minPara is None:
@@ -218,7 +221,7 @@ class gradient_ascent:
             if ((newfVal<self.fVal) ^ (self.slope==1)):
                 self.gain*=1.3
             '''calculate error and update'''
-            error=np.max(np.abs(newPara-self.para)/self.errThreshold)
+            error=max(np.max(np.abs(newPara-self.para)/self.errThreshold),abs(self.fVal-newfVal)*2./max(abs(newfVal),abs(self.fVal))/self.f_error)
             self.para=np.copy(newPara)
             self.fVal=newfVal
             if count%report==0:

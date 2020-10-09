@@ -229,9 +229,9 @@ class gradient_ascent:
             if count%report==0:
                 logger.info('iteration '+str(count)+', value= '+str(self.fVal))
         '''fine tune adjustment by errThreshold'''
-        logger.info('fine tuning')
         gradient=self.grad()
         if self.finetune_space>0:
+            logger.info('fine tuning')
             for count in range(1,self.limitRun):
                 newfVal=[]
                 newPara=[]

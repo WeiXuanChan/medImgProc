@@ -82,7 +82,7 @@ History:
                                                               -gradient ascent added warning when maximum iteration reached
     Author: w.x.chan@gmail.com         09OCT2020           - v2.6.30
                                                               -gradient descent, debug finetune_space
-    Author: w.x.chan@gmail.com         09OCT2020           - v2.6.31
+    Author: w.x.chan@gmail.com         09OCT2020           - v2.6.32
                                                               -gradient descent, add normalize
                                                               
 Requirements:
@@ -95,7 +95,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.31'
+_version='2.6.32'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -203,7 +203,7 @@ class gradient_ascent:
             gradient=self.grad()
             if self.normalize_para:
                 '''normalize gradient with errThreshold'''
-                gradient=gradient/self.errThreshold[n]
+                gradient=gradient/self.errThreshold
             else:
                 '''reduce gradient (smoothing)'''
                 for n in range(len(gradient)):

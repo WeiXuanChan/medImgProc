@@ -71,6 +71,8 @@ History:
                                                               -in registrator: register, added maskArray1 and maskArray2
     Author: w.x.chan@gmail.com         22JUL2020           - v2.6.24
                                                               -in registrator: register, change sampler to RandomSparseMask is mask exist
+    Author: w.x.chan@gmail.com         09OCT2020           - v2.6.26
+                                                              -(debug) gradient ascent add self.errThreshold
                                                               
 Requirements:
     numpy.py
@@ -82,7 +84,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.24'
+_version='2.6.26'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -146,6 +148,8 @@ class gradient_ascent:
         self.paraLength=len(initPara)
         if type(errThreshold) in [int,float]:
             self.errThreshold=np.ones(len(initPara))*errThreshold
+        else:
+            self.errThreshold=errThreshold
         self.limitRun=limitRun
         self.slope=1.
         self.finetune_space=finetune_space

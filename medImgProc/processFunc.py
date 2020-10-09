@@ -82,6 +82,8 @@ History:
                                                               -gradient ascent added warning when maximum iteration reached
     Author: w.x.chan@gmail.com         09OCT2020           - v2.6.30
                                                               -gradient descent, debug finetune_space
+    Author: w.x.chan@gmail.com         09OCT2020           - v2.6.31
+                                                              -gradient descent, add normalize
                                                               
 Requirements:
     numpy.py
@@ -93,7 +95,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.30'
+_version='2.6.31'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -150,7 +152,7 @@ optimisation class
 '''
 
 class gradient_ascent:
-    def __init__(self,func,initPara,args=(),gain=None,errThreshold=0.6,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2):
+    def __init__(self,func,initPara,args=(),gain=None,errThreshold=0.6,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2,normalize_var=False):
         self.func=func
         self.para=np.array(initPara)
         self.args=args
@@ -170,6 +172,7 @@ class gradient_ascent:
             minPara=np.array([float('-inf')]*self.paraLength)
         self.maxPara=maxPara
         self.minPara=minPara
+        self.normalize_var=normalize_var
         self.gain=gain
     def run(self,report=float('inf')):
         if report==True:
@@ -198,14 +201,18 @@ class gradient_ascent:
                 break
             #fValtemp=func(self.para,*self.args)
             gradient=self.grad()
-            '''reduce gradient (smoothing)'''
-            for n in range(len(gradient)):
-                if (self.gain*self.slope*gradient[n]) > (self.errThreshold[n]*10.):
-                    gradient[n]=self.errThreshold[n]*10./self.gain/self.slope
-                elif (self.gain*self.slope*gradient[n]) < (-self.errThreshold[n]*10.):
-                    gradient[n]=-self.errThreshold[n]*10./self.gain/self.slope
+            if self.normalize_var:
+                '''normalize gradient with errThreshold'''
+                gradient=gradient/self.errThreshold[n]
+            else:
+                '''reduce gradient (smoothing)'''
+                for n in range(len(gradient)):
+                    if (self.gain*self.slope*gradient[n]) > (self.errThreshold[n]*10.):
+                        gradient[n]=self.errThreshold[n]*10./self.gain/self.slope
+                    elif (self.gain*self.slope*gradient[n]) < (-self.errThreshold[n]*10.):
+                        gradient[n]=-self.errThreshold[n]*10./self.gain/self.slope
             newPara=self.para+self.gain*self.slope*gradient
-            '''reduce gain'''
+            '''reduce gain for max and minPara'''
             for n in range(len(self.para)):
                 if newPara[n] > self.maxPara[n]:
                     self.gain=min(self.gain,np.abs((self.maxPara[n]-self.para[n])/self.slope/gradient[n]))
@@ -274,8 +281,8 @@ class gradient_ascent:
         return np.array(gradient)
     
 class gradient_descent(gradient_ascent):
-    def __init__(self,func,initPara,args=(),gain=None,errThreshold=1.,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2):
-        super(gradient_descent, self).__init__(func,initPara,args=args,gain=gain,errThreshold=errThreshold,f_error=f_error,limitRun=limitRun,maxPara=maxPara,minPara=minPara,finetune_space=finetune_space)
+    def __init__(self,func,initPara,args=(),gain=None,errThreshold=1.,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2,normalize_var=False):
+        super(gradient_descent, self).__init__(func,initPara,args=args,gain=gain,errThreshold=errThreshold,f_error=f_error,limitRun=limitRun,maxPara=maxPara,minPara=minPara,finetune_space=finetune_space,normalize_var=normalize_var)
         self.slope=-1.
 '''
 internal functions

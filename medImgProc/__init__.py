@@ -177,8 +177,8 @@ History:
                                                             -Image v2.6.25
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         09Oct2020           - v2.6.27
-                                                            -processFunc v2.6.27
+  Author: w.x.chan@gmail.com         09Oct2020           - v2.6.28
+                                                            -processFunc v2.6.28
                                                             -Image v2.6.25
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
@@ -194,7 +194,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.6.27'
+_version='2.6.28'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 

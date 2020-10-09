@@ -80,6 +80,8 @@ History:
     Author: w.x.chan@gmail.com         09OCT2020           - v2.6.29
                                                               -gradient descent, debug f_error
                                                               -gradient ascent added warning when maximum iteration reached
+    Author: w.x.chan@gmail.com         09OCT2020           - v2.6.30
+                                                              -gradient descent, debug finetune_space
                                                               
 Requirements:
     numpy.py
@@ -91,7 +93,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.29'
+_version='2.6.30'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -272,8 +274,8 @@ class gradient_ascent:
         return np.array(gradient)
     
 class gradient_descent(gradient_ascent):
-    def __init__(self,func,initPara,args=(),gain=None,errThreshold=1.,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None):
-        super(gradient_descent, self).__init__(func,initPara,args=args,gain=gain,errThreshold=errThreshold,f_error=f_error,limitRun=limitRun,maxPara=maxPara,minPara=minPara)
+    def __init__(self,func,initPara,args=(),gain=None,errThreshold=1.,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2):
+        super(gradient_descent, self).__init__(func,initPara,args=args,gain=gain,errThreshold=errThreshold,f_error=f_error,limitRun=limitRun,maxPara=maxPara,minPara=minPara,finetune_space=finetune_space)
         self.slope=-1.
 '''
 internal functions

@@ -82,7 +82,7 @@ History:
                                                               -gradient ascent added warning when maximum iteration reached
     Author: w.x.chan@gmail.com         09OCT2020           - v2.6.30
                                                               -gradient descent, debug finetune_space
-    Author: w.x.chan@gmail.com         09OCT2020           - v2.6.32
+    Author: w.x.chan@gmail.com         09OCT2020           - v2.6.33
                                                               -gradient descent, add normalize
                                                               
 Requirements:
@@ -95,7 +95,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.32'
+_version='2.6.33'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -204,13 +204,12 @@ class gradient_ascent:
             if self.normalize_para:
                 '''normalize gradient with errThreshold'''
                 gradient=gradient/self.errThreshold
-            else:
-                '''reduce gradient (smoothing)'''
-                for n in range(len(gradient)):
-                    if (self.gain*self.slope*gradient[n]) > (self.errThreshold[n]*10.):
-                        gradient[n]=self.errThreshold[n]*10./self.gain/self.slope
-                    elif (self.gain*self.slope*gradient[n]) < (-self.errThreshold[n]*10.):
-                        gradient[n]=-self.errThreshold[n]*10./self.gain/self.slope
+            '''reduce gradient (smoothing)'''
+            for n in range(len(gradient)):
+                if (self.gain*self.slope*gradient[n]) > (self.errThreshold[n]*10.):
+                    gradient[n]=self.errThreshold[n]*10./self.gain/self.slope
+                elif (self.gain*self.slope*gradient[n]) < (-self.errThreshold[n]*10.):
+                    gradient[n]=-self.errThreshold[n]*10./self.gain/self.slope
             newPara=self.para+self.gain*self.slope*gradient
             '''reduce gain for max and minPara'''
             for n in range(len(self.para)):

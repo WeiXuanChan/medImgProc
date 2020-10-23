@@ -212,17 +212,19 @@ class gradient_ascent:
                     gradient[n]=-self.errThreshold[n]*10./self.gain/self.slope
             newPara=self.para+self.gain*self.slope*gradient
             '''reduce gain for max and minPara'''
-            for n in range(len(self.para)):
-                if newPara[n] > self.maxPara[n]:
-                    self.gain=min(self.gain,np.abs((self.maxPara[n]-self.para[n])/self.slope/gradient[n]))
-                elif newPara[n] < self.minPara[n]:
-                    self.gain=min(self.gain,np.abs((self.minPara[n]-self.para[n])/self.slope/gradient[n]))
-            
-            newPara=self.para+self.gain*self.slope*gradient
+            if (np.count_nonzero(newPara>self.maxPara)+np.count_nonzero(newPara<self.minPara))<(len(self.para)/2.):
+                newPara=np.maximum(self.minPara,np.minimum(self.maxPara,newPara))
+            else:
+                for n in range(len(self.para)):
+                    if newPara[n] > self.maxPara[n]:
+                        self.gain=min(self.gain,np.abs((self.maxPara[n]-self.para[n])/self.slope/gradient[n]))
+                    elif newPara[n] < self.minPara[n]:
+                        self.gain=min(self.gain,np.abs((self.minPara[n]-self.para[n])/self.slope/gradient[n]))
+                newPara=self.para+self.gain*self.slope*gradient
             newfVal=self.func(newPara,*self.args)
             logger.debug(str(count)+' : Current Para '+str(self.para)+' , Cost '+str(self.fVal)+' , Gradient '+str(gradient)+' , Gain '+str(self.gain)+' , Next cost '+str(newfVal))
             '''reduce gain is fVal did not improve'''
-            while ((newfVal>self.fVal) ^ (self.slope==1)):
+            while ((newfVal>self.fVal) ^ (self.slope==1)) or np.isnan(newfVal):
                 self.gain*=0.7
                 newPara=self.para+self.gain*self.slope*gradient
                 newfVal=self.func(newPara,*self.args)
@@ -267,17 +269,22 @@ class gradient_ascent:
             logger.info('Final value= '+str(self.fVal)+', with '+str(self.para))
         return np.copy(self.para)
 
-    def grad(self):
+    def grad(self,testslope_factor=1.):
         gradient=[]
         for n in range(self.paraLength):
             newPara=np.copy(self.para)
-            newPara[n]+=self.errThreshold[n]
+            newPara[n]+=self.errThreshold[n]*testslope_factor
             plus=self.func(newPara,*self.args)
             newPara=np.copy(self.para)
-            newPara[n]-=self.errThreshold[n]
+            newPara[n]-=self.errThreshold[n]*testslope_factor
             minus=self.func(newPara,*self.args)
-            gradient.append((plus-minus)/2./self.errThreshold[n])
-        return np.array(gradient)
+            gradient.append((plus-minus)/2./self.errThreshold[n]/testslope_factor)
+        gradient=np.array(gradient)
+        if not(np.all(np.isfinite(np.array(gradient)))):
+            if testslope_factor<0.1:
+                raise Exception('Unable to determine gradient at '+repr(self.para)+': gradient='+repr(gradient))
+            gradient=self.grad(testslope_factor=testslope_factor*0.5)
+        return gradient
     
 class gradient_descent(gradient_ascent):
     def __init__(self,func,initPara,args=(),gain=None,errThreshold=1.,f_error=float('inf'),limitRun=100,maxPara=None,minPara=None,finetune_space=2,normalize_para=False):

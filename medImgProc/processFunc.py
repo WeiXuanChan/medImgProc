@@ -196,7 +196,10 @@ class gradient_ascent:
         self.fVal=self.func(self.para,*self.args)
         if report<float('inf'):
             logger.info('Initial value= '+str(self.fVal)+', with '+str(self.para))
-        if not(np.isfinte(self.fVal)):
+        if (self.fVal*self.slope) == float('inf'):
+            logger.warning('Infinite value! f= '+str(self.fVal)+', with '+str(self.para))
+            return np.copy(self.para)
+        elif np.isnan(self.fVal):
             raise Exception('Did not get a finite fVal to start with. f='+str(self.fVal)+', with '+str(self.para))
         for count in range(1,self.limitRun):
             if error<1.:
@@ -243,6 +246,11 @@ class gradient_ascent:
             self.fVal=newfVal
             if count%report==0:
                 logger.info('iteration '+str(count)+', value= '+str(self.fVal))
+            if (self.fVal*self.slope) == float('inf'):
+                logger.warning('Infinite value! f= '+str(self.fVal)+', with '+str(self.para))
+                return np.copy(self.para)
+            elif np.isnan(self.fVal):
+                raise Exception('fVal is Not A Number. f='+str(self.fVal)+', with '+str(self.para))
         else:
             logger.warning('Maximum iteration ('+str(self.limitRun)+') reached.')
         '''fine tune adjustment by errThreshold'''
@@ -284,7 +292,7 @@ class gradient_ascent:
         gradient=np.array(gradient)
         if not(np.all(np.isfinite(np.array(gradient)))):
             if testslope_factor<0.1:
-                raise Exception('Unable to determine gradient at '+repr(self.para)+': gradient='+repr(gradient))
+                raise Exception('Unable to determine gradient at '+str(self.para)+': gradient='+str(gradient))
             gradient=self.grad(testslope_factor=testslope_factor*0.5)
         return gradient
     

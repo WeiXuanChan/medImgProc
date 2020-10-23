@@ -199,6 +199,8 @@ class gradient_ascent:
         if (self.fVal*self.slope) == float('inf'):
             logger.warning('Infinite value! f= '+str(self.fVal)+', with '+str(self.para))
             return np.copy(self.para)
+        elif (self.fVal*self.slope) == float('-inf'):
+            logger.warning('Starting with an infinite value! f= '+str(self.fVal)+', with '+str(self.para))
         elif np.isnan(self.fVal):
             raise Exception('Did not get a finite fVal to start with. f='+str(self.fVal)+', with '+str(self.para))
         for count in range(1,self.limitRun):

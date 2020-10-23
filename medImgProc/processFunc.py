@@ -196,6 +196,8 @@ class gradient_ascent:
         self.fVal=self.func(self.para,*self.args)
         if report<float('inf'):
             logger.info('Initial value= '+str(self.fVal)+', with '+str(self.para))
+        if not(np.isfinte(self.fVal)):
+            raise Exception('Did not get a finite fVal to start with. f='+str(self.fVal)+', with '+str(self.para))
         for count in range(1,self.limitRun):
             if error<1.:
                 break

@@ -84,6 +84,8 @@ History:
                                                               -gradient descent, debug finetune_space
     Author: w.x.chan@gmail.com         09OCT2020           - v2.6.33
                                                               -gradient descent, add normalize
+    Author: jorry.zhengyu@gmail.com    03DEC2020           - v2.6.34
+                                                              -trimesh, stl export                                                              
                                                               
 Requirements:
     numpy.py
@@ -95,7 +97,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.33'
+_version='2.6.34'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1034,7 +1036,10 @@ def imageRegister(image,stlFile,imageToSTLsize=[],stlRefDim={},baseRefFraction=1
         logger.info('Writing STL file to '+pointfile+'_t'+str(n+1)+'.stl')
         
         ref_mesh.vertices=newPixelVertice*imageToSTLsize
-        trimesh.io.export.export_mesh(ref_mesh,pointfile+'_t'+str(n+1)+'.stl')
+        try:
+            trimesh.io.export.export_mesh(ref_mesh,pointfile+'_t'+str(n+1)+'.stl')
+        except:
+            ref_mesh.export(pointfile+'_t'+str(n+1)+'.stl')
         if baseRefFraction!=1.:
             np.savetxt(pointfile+'Output/outputpoints.pts',newPixelVertice,header='point\n'+str(len(pixelVertice)),comments='')
 def vectorRegister(image,savePath='',stlRefDim={},baseRefFraction=1.,baseRefFunc=None,verifyImg=False,startind=0):
@@ -1759,7 +1764,10 @@ def transform(stlFile,timeStepNo,mapNo,startTime=0,cumulative=True,ratioFunc=tim
             newPos=forward[n]*ratio[n]+(1-ratio[n])*backward[n]
             if stlFile[-3:]=='stl':
                 ref_mesh.vertices=np.array(newPos)*scale
-                trimesh.io.export.export_mesh(ref_mesh,savePath+'/t'+str(toTime)+addSaveStr+'.stl')
+                try:
+                    trimesh.io.export.export_mesh(ref_mesh,savePath+'/t'+str(toTime)+addSaveStr+'.stl')
+                except:
+                    ref_mesh.export(savePath+'/t'+str(toTime)+addSaveStr+'.stl')
             else:
                 np.savetxt(savePath+'/t'+str(toTime)+addSaveStr+'.txt',np.array(newPos)*scale)
     else:
@@ -1818,7 +1826,10 @@ def transform(stlFile,timeStepNo,mapNo,startTime=0,cumulative=True,ratioFunc=tim
                 np.savetxt(savePath+'/input.pts',newPos,header='point\n'+str(len(newPos)),comments='')
             if stlFile[-3:]=='stl':
                 ref_mesh.vertices=np.array(newPos)*scale
-                trimesh.io.export.export_mesh(ref_mesh,savePath+'/t'+str(toTime)+addSaveStr+'.stl')
+                try:
+                    trimesh.io.export.export_mesh(ref_mesh,savePath+'/t'+str(toTime)+addSaveStr+'.stl')
+                except:
+                    ref_mesh.export(savePath+'/t'+str(toTime)+addSaveStr+'.stl')
             else:
                 np.savetxt(savePath+'/t'+str(toTime)+addSaveStr+'.txt',np.array(newPos)*scale)
 def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scale=1.,delimiter=' '):
@@ -1873,7 +1884,10 @@ def transform_img2img(stlFile,trfFile,savePath='',mhaFile='',fileName='trf',scal
         newPos=np.array(newPos)
         if stlFile[-3:]=='stl':
             ref_mesh.vertices=newPos*scale
-            trimesh.io.export.export_mesh(ref_mesh,savePath+'/'+fileName+'.stl')
+            try:
+                trimesh.io.export.export_mesh(ref_mesh,savePath+'/'+fileName+'.stl')
+            except:
+                ref_mesh.export(savePath+'/'+fileName+'.stl')
         else:
             np.savetxt(savePath+'/'+fileName+'.txt',newPos*scale)
         newPos=newPos*scale
@@ -2075,7 +2089,10 @@ def inverseTransform(stlFile,refTimeInd,timeStepNo,mapNo,savePath='',TmapPath=''
             np.savetxt(savePath+'/input.pts',newPos2,header='point\n'+str(len(newPos2)),comments='')
     if stlFile[-3:]=='stl':
         ref_mesh.vertices=np.array(calculatedPos)*scale
-        trimesh.io.export.export_mesh(ref_mesh,savePath+'/t0_reversedfrom_t'+str(refTimeInd)+'.stl')
+        try:
+            trimesh.io.export.export_mesh(ref_mesh,savePath+'/t0_reversedfrom_t'+str(refTimeInd)+'.stl')
+        except:
+            ref_mesh.export(savePath+'/t0_reversedfrom_t'+str(refTimeInd)+'.stl')
     else:
         np.savetxt(savePath+'/t0_reversedfrom_t'+str(refTimeInd)+'.txt',np.array(calculatedPos)*scale)
 

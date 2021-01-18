@@ -197,9 +197,9 @@ History:
                                                             -Image v2.6.25
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         18Jan2021           - v2.6.35 - added loadASCII
+  Author: w.x.chan@gmail.com         18Jan2021           - v2.6.36 - added loadASCII
                                                             -processFunc v2.6.34
-                                                            -Image v2.6.35
+                                                            -Image v2.6.36
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
 
@@ -213,7 +213,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.6.35'
+_version='2.6.36'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 
@@ -273,19 +273,20 @@ def loadASCII(filePath):
         else:
             raise Exception('Not an ASCII image file from medImgProc.')
         while line[2:-1]!='ENDOFPROPERTIES':
-            if len(line)>=8:
+            if len(line)>=11:
                 if line[2:10]=='dtype = ':
                     if line[10:-1]=='None':
                         img.dtype=None
                     else:
                         img.dtype=line[10:-1]
+                        img.data=img.data.astype(img.dtype)
                 elif line[2:8]=='dim = ':
-                    if line[9:-1]=='None':
+                    if line[8:-1]=='None':
                         img.dim=None
                     else:
                         img.dim=line[9:-2].split(',')
                 elif line[2:11]=='dimlen = ':
-                    if line[12:-1]=='None':
+                    if line[11:-1]=='None':
                         img.dimlen=None
                     else:
                         dimlenstr=line[12:-2].split(',')
@@ -293,6 +294,10 @@ def loadASCII(filePath):
                         for n in range(len(dimlenstr)):
                             dimlenstrsplit=dimlenstr[n].split(':')
                             img.dimlen[dimlenstrsplit[0]]=float(dimlenstrsplit[1])
+                elif line[2:10]=='shape = ':
+                    if line[10:-1]!='None':
+                        shape=tuple(map(int,line[11:-2].split(',')))
+                        img.data=img.data.reshape(shape)
             line = f.readline()
     return img
 def load(filePath):

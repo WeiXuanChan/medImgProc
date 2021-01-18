@@ -36,6 +36,8 @@ History:
                                                             -save image directly
   Author: w.x.chan@gmail.com         25AUG2020           - v2.6.25
                                                             -load volume before image
+  Author: w.x.chan@gmail.com         18Jan2021           - v2.6.35
+                                                            -add funct to save image as ascii without pickle
                                                             
   
 Requirements:
@@ -47,7 +49,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.25'
+_version='2.6.35'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -634,6 +636,25 @@ class image:
         os.makedirs(os.path.dirname(file), exist_ok=True)
         with open(file, 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
+    def saveASCII(self,file):
+        os.makedirs(os.path.dirname(file), exist_ok=True)
+        header='ASCII medImgProc.image\n'
+        if self.dtype is not None:
+            header+='dtype = '+str(self.dtype)+'\n'
+        else:
+            header+='dtype = None\n'
+        if self.dim is not None:
+            header+='dim = ['+','.join(self.dim)+']\n'
+        else:
+            header+='dim = None\n'
+        dimlenstr=[]
+        for key in self.dimlen:
+            dimlenstr.append(str(key)+':{0:.18e}'.format(self.dimlen[key]))
+        if self.dimlen is not None:
+            header+='dimlen = {'+','.join(dimlenstr)+'}\n'
+        else:
+            header+='dimlen = None\n'            
+        np.savetxt(file,self.data.reshape(-1),header=header)
     '''
     Functions which changes class data
     '''

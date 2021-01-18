@@ -653,7 +653,8 @@ class image:
         if self.dimlen is not None:
             header+='dimlen = {'+','.join(dimlenstr)+'}\n'
         else:
-            header+='dimlen = None\n'            
+            header+='dimlen = None\n'     
+        header+='ENDOFPROPERTIES'
         np.savetxt(file,self.data.reshape(-1),header=header)
     '''
     Functions which changes class data

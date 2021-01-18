@@ -36,7 +36,7 @@ History:
                                                             -save image directly
   Author: w.x.chan@gmail.com         25AUG2020           - v2.6.25
                                                             -load volume before image
-  Author: w.x.chan@gmail.com         18Jan2021           - v2.6.35
+  Author: w.x.chan@gmail.com         18Jan2021           - v2.6.36
                                                             -add funct to save image as ascii without pickle
                                                             
   
@@ -49,7 +49,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.35'
+_version='2.6.36'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -653,9 +653,13 @@ class image:
         if self.dimlen is not None:
             header+='dimlen = {'+','.join(dimlenstr)+'}\n'
         else:
-            header+='dimlen = None\n'     
+            header+='dimlen = None\n'  
+        if self.data is not None:
+            header+='shape = ('+','.join(map(str,self.data.shape))+')\n'
+        else:
+            header+='shape = None\n'    
         header+='ENDOFPROPERTIES'
-        np.savetxt(file,self.data.reshape(-1),header=header)
+        np.savetxt(file,self.data.reshape(-1,order='F'),header=header)
     '''
     Functions which changes class data
     '''

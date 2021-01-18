@@ -197,7 +197,7 @@ History:
                                                             -Image v2.6.25
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         18Jan2021           - v2.6.35
+  Author: w.x.chan@gmail.com         18Jan2021           - v2.6.35 - added loadASCII
                                                             -processFunc v2.6.34
                                                             -Image v2.6.35
                                                             -GUI v2.6.19
@@ -262,12 +262,43 @@ def stretch(imageClass,stretchDim,scheme=image.DEFAULT_INTERPOLATION_SCHEME):
     return newImage
 def save(imageClass,filePath):
     imageClass.save(filePath)
+def loadASCII(filePath):
+    img=image.image()
+    img.data=np.loadtxt(filePath)
+    with open(filePath,'r') as f:
+        line = f.readline()
+        while line[2:-1]!='ENDOFPROPERTIES':
+            if len(line)>=8:
+                if line[2:10]=='dtype = ':
+                    if line[10:-1]=='None':
+                        img.dtype=None
+                    else:
+                        img.dtype=line[10:-1]
+                elif line[2:8]=='dim = ':
+                    if line[9:-1]=='None':
+                        img.dim=None
+                    else:
+                        img.dim=line[9:-2].split(',')
+                elif line[2:11]=='dimlen = ':
+                    if line[12:-1]=='None':
+                        img.dimlen=None
+                    else:
+                        dimlenstr=line[12:-2].split(',')
+                        img.dimlen={}
+                        for n in range(len(dimlenstr)):
+                            dimlenstrsplit=dimlenstr[n].split(':')
+                            img.dimlen[dimlenstrsplit[0]]=float(dimlenstrsplit[1])
+            line = f.readline()
+    return img
 def load(filePath):
     try:
         with open(filePath, 'rb') as input:
             outObj = pickle.load(input)
     except:
-        outObj=imread(filePath)
+        try:
+            outObj=imread(filePath)
+        except:
+            outObj=loadASCII(filePath)
     return outObj
 def loadStack(imageFileFormat,dimension=None,n=0,maxskip=0):
     getFunc=None

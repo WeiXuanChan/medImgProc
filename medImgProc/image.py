@@ -638,7 +638,7 @@ class image:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
     def saveASCII(self,file):
         os.makedirs(os.path.dirname(file), exist_ok=True)
-        header='ASCII medImgProc.image\n'
+        header='ASCII medImgProc.image v'+_version+'\n'
         if self.dtype is not None:
             header+='dtype = '+str(self.dtype)+'\n'
         else:

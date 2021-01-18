@@ -267,6 +267,11 @@ def loadASCII(filePath):
     img.data=np.loadtxt(filePath)
     with open(filePath,'r') as f:
         line = f.readline()
+        if len(line)>=8:
+            if line[2:7]!='ASCII':
+                raise Exception('Not an ASCII image file from medImgProc.')
+        else:
+            raise Exception('Not an ASCII image file from medImgProc.')
         while line[2:-1]!='ENDOFPROPERTIES':
             if len(line)>=8:
                 if line[2:10]=='dtype = ':

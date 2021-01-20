@@ -85,7 +85,9 @@ History:
     Author: w.x.chan@gmail.com         09OCT2020           - v2.6.33
                                                               -gradient descent, add normalize
     Author: jorry.zhengyu@gmail.com    03DEC2020           - v2.6.34
-                                                              -trimesh, stl export                                                              
+                                                              -trimesh, stl export
+    Author: jorry.zhengyu@gmail.com    20Jan2021           - v2.6.37
+                                                              -add option to TmapRegister (refTimeStep) to use time other than 0 as reference in Lagrangian                                                              
                                                               
 Requirements:
     numpy.py
@@ -97,7 +99,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.34'
+_version='2.6.37'
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1130,7 +1132,7 @@ def vectorRegister(image,savePath='',stlRefDim={},baseRefFraction=1.,baseRefFunc
         if baseRefFraction!=1.:
             np.savetxt(pointfile+'Output/outputpoints.pts',newPixelVertice,header='point\n'+str(len(pixelVertice)),comments='')
 
-def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=False,startTime=0,scaleImg=1.,maskArray=None,writeImg=False,twoD=False,nres =3,smoothing=True,cyclic=False):
+def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=False,startTime=0,refTimeStep=0,scaleImg=1.,maskArray=None,writeImg=False,twoD=False,nres =3,smoothing=True,cyclic=False):
     image=image.clone()
     if scaleImg!=1:
         for axis in ['x','y','z']:
@@ -1246,12 +1248,12 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
                 sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t'+str(n+1)+'to'+str(n)+'_'+str(m)+'.txt')
             if writeImg:
                 sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(n+1)+'to'+str(n)+'_resultImg.mha')
-        elif n!=0:
-            logger.info('Registering t '+str(n+1)+' wrt t '+str(0))
+        elif n!=refTimeStep:
+            logger.info('Registering t '+str(n+1)+' wrt t '+str(refTimeStep))
             elastixImageFilter=sitk.ElastixImageFilter()
             elastixImageFilter.LogToFileOff()
             elastixImageFilter.LogToConsoleOff()
-            fixImg=sitk.GetImageFromArray(np.copy(image.data[0]), isVector=colorVec)
+            fixImg=sitk.GetImageFromArray(np.copy(image.data[refTimeStep]), isVector=colorVec)
             fixImg.SetOrigin(origin)
             fixImg.SetSpacing(spacing)
             movImg=sitk.GetImageFromArray(np.copy(image.data[n+1]), isVector=colorVec)
@@ -1261,7 +1263,7 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
             elastixImageFilter.SetMovingImage(movImg)
             elastixImageFilter.SetParameterMap(parameterMapVector)
             if maskArray is not None:
-                fixMask=sitk.GetImageFromArray(maskArray[0].astype('uint8'), isVector=colorVec)
+                fixMask=sitk.GetImageFromArray(maskArray[refTimeStep].astype('uint8'), isVector=colorVec)
                 fixMask.SetOrigin(origin)
                 fixMask.SetSpacing(spacing)
                 movMask=sitk.GetImageFromArray(maskArray[n+1].astype('uint8'), isVector=colorVec)
@@ -1272,9 +1274,9 @@ def TmapRegister(image,savePath='',origin=(0.,0.,0.),bgrid=2.,bweight=1.,rms=Fal
             elastixImageFilter.Execute()
             Tmap=elastixImageFilter.GetTransformParameterMap()
             for m in range(len(Tmap)):
-                sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t0to'+str(n+1)+'_'+str(m)+'.txt')
+                sitk.WriteParameterFile(Tmap[m],savePath+'/transform/t'+str(refTimeStep)+'to'+str(n+1)+'_'+str(m)+'.txt')
             if writeImg:
-                sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t0to'+str(n+1)+'_resultImg.mha')
+                sitk.WriteImage(elastixImageFilter.GetResultImage(),savePath+'/t'+str(refTimeStep)+'to'+str(n+1)+'_resultImg.mha')
     if cyclic:
         logger.info('Registering t '+str(0)+' wrt t '+str(image.data.shape[0]-1))
         elastixImageFilter=sitk.ElastixImageFilter()

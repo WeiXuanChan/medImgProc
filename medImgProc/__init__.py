@@ -202,7 +202,7 @@ History:
                                                             -Image v2.6.36
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         18Jan2021           - v2.6.36 
+  Author: w.x.chan@gmail.com         20Jan2021           - v2.6.37 
                                                             -processFunc v2.6.37
                                                             -Image v2.6.36
                                                             -GUI v2.6.19

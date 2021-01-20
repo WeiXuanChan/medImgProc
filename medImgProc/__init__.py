@@ -202,6 +202,11 @@ History:
                                                             -Image v2.6.36
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
+  Author: w.x.chan@gmail.com         18Jan2021           - v2.6.36 
+                                                            -processFunc v2.6.37
+                                                            -Image v2.6.36
+                                                            -GUI v2.6.19
+                                                            -pointSpeckleProc v2.4.0
 
 Requirements:
     numpy.py
@@ -213,7 +218,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.6.36'
+_version='2.6.37'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 

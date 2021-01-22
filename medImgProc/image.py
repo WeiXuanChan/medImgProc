@@ -38,7 +38,7 @@ History:
                                                             -load volume before image
   Author: w.x.chan@gmail.com         18Jan2021           - v2.6.36
                                                             -add func to save image as ascii (saveASCII) without pickle
-  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.39
+  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.40
                                                             -set saveASCII to control s.f.
                                                             
   
@@ -51,7 +51,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.39'
+_version='2.6.40'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np

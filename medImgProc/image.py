@@ -663,7 +663,10 @@ class image:
         else:
             header+='shape = None\n'    
         header+='ENDOFPROPERTIES'
-        np.savetxt(file,self.data.reshape(-1,order='F'),header=header)
+        savedigit=18
+        if self.data is not None:
+            savedigit=int(np.ceil(np.log10(2**(self.data.dtype.itemsize*8)))-1)
+        np.savetxt(file,self.data.reshape(-1,order='F'),fmt='%.'+str(savedigit)+'e',header=header)
     '''
     Functions which changes class data
     '''

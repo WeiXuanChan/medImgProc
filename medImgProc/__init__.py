@@ -289,7 +289,6 @@ def loadASCII(filePath):
                         img.dtype=None
                     else:
                         img.dtype=line[10:-1]
-                        img.data=img.data.astype(img.dtype)
                 elif line[2:8]=='dim = ':
                     if line[8:-1]=='None':
                         img.dim=None

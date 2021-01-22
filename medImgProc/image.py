@@ -37,7 +37,9 @@ History:
   Author: w.x.chan@gmail.com         25AUG2020           - v2.6.25
                                                             -load volume before image
   Author: w.x.chan@gmail.com         18Jan2021           - v2.6.36
-                                                            -add funct to save image as ascii without pickle
+                                                            -add func to save image as ascii (saveASCII) without pickle
+  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.38
+                                                            -set saveASCII to control s.f.
                                                             
   
 Requirements:
@@ -49,7 +51,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.36'
+_version='2.6.38'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -639,7 +641,9 @@ class image:
     def saveASCII(self,file):
         os.makedirs(os.path.dirname(file), exist_ok=True)
         header='ASCII medImgProc.image v'+_version+'\n'
-        if self.dtype is not None:
+        if self.data is not None:
+            header+='dtype = '+str(self.data.dtype)+'\n'
+        elif self.dtype is not None:
             header+='dtype = '+str(self.dtype)+'\n'
         else:
             header+='dtype = None\n'

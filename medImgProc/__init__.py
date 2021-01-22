@@ -223,7 +223,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.6.39'
+_version='2.6.40'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 

@@ -136,7 +136,7 @@ def boolToContour(imageClass,shiftPixel):
         resultArray[resultArray>=0.5]=255
         imageClass.data=resultArray
 def datatypeMinMax(dtype):
-    return (np.iinfo(dtype.dtype).min,np.iinfo(dtype.dtype).max)
+    return (np.iinfo(np.dtype(dtype)).min,np.iinfo(np.dtype(dtype)).max)
 def normalizeArrayVal(oldArray,minVal,maxVal):
     arrayMax=oldArray.max()
     arrayMin=oldArray.min()

@@ -207,7 +207,7 @@ History:
                                                             -Image v2.6.36
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.38 -debug loadASCII for reshape order='F' and bound before changing type
+  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.39 -debug loadASCII for reshape order='F' and bound before changing type
                                                             -processFunc v2.6.37
                                                             -Image v2.6.39
                                                             -GUI v2.6.19
@@ -310,7 +310,7 @@ def loadASCII(filePath):
                         img.data=img.data.reshape(shape,order='F')
             line = f.readline()
     if img.data is not None and img.dtype is not None:
-        datamin,datamax=image.datatypeMinMax(img.dtype)
+        datamin,datamax=image.datatypeMinMax(np.dtype(img.dtype))
         img.data=np.maximum(datamin,np.minimum(datamax,img.data)).astype(img.dtype)
     return img
 def load(filePath):

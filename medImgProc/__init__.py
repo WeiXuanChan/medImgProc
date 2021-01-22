@@ -207,9 +207,9 @@ History:
                                                             -Image v2.6.36
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.39 -debug loadASCII for reshape order='F' and bound before changing type
+  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.40 -debug loadASCII for reshape order='F' and bound before changing type
                                                             -processFunc v2.6.37
-                                                            -Image v2.6.39
+                                                            -Image v2.6.40
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
 

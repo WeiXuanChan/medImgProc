@@ -38,7 +38,7 @@ History:
                                                             -load volume before image
   Author: w.x.chan@gmail.com         18Jan2021           - v2.6.36
                                                             -add func to save image as ascii (saveASCII) without pickle
-  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.38
+  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.39
                                                             -set saveASCII to control s.f.
                                                             
   
@@ -51,7 +51,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.38'
+_version='2.6.39'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -645,7 +645,7 @@ class image:
         header+='ENDOFPROPERTIES'
         savedigit=18
         if self.data is not None:
-            savedigit=int(np.ceil(np.log10(2**(self.data.dtype.itemsize*8)))-1)
+            savedigit=int(np.ceil(np.log10(datatypeMinMax(self.data.dtype)))-1)
         np.savetxt(file,self.data.reshape(-1,order='F'),fmt='%.'+str(savedigit)+'e',header=header)
     '''
     Functions which changes class data

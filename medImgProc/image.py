@@ -245,6 +245,29 @@ def applyFunc(imageClass,func,axes,dimSlice,funcArgs):#use slice(a,b) for otherD
         transposeIndex,currentDim=arrangeDim(currentDim,newImage.dim,True)
         newData=newData.transpose(transposeIndex)
         return newData
+def writeasVTI(file):##inprogress
+    dz, dy, dx = self.data.shape
+    dlx=self.dimlen['x']
+    dly=self.dimlen['y']
+    dlz=self.dimlen['z']
+    v_image = numpy_support.numpy_to_vtk(self.data.flat)
+    extent = (0, dx -1, 0, dy -1, 0, dz - 1)
+    image = vtk.vtkImageData()
+    image.SetOrigin(0, 0, 0)
+    image.SetSpacing(dlx,dly,dlz)
+    image.SetDimensions(dx, dy, dz)
+    # SetNumberOfScalarComponents and SetScalrType were replaced by
+    # AllocateScalars
+    #  image.SetNumberOfScalarComponents(1)
+    #  image.SetScalarType(numpy_support.get_vtk_array_type(n_array.dtype))
+    image.AllocateScalars(numpy_support.get_vtk_array_type(self.data.dtype), 1)
+    image.SetExtent(extent)
+    image.GetPointData().SetScalars(v_image)
+
+    writer = vtk.vtkXMLImageDataWriter()
+    writer.SetInputData(image)
+    writer.SetFileName(file)
+    writer.Write()
 def recursive2DWrite(imageArray,currentDim,axes,filePath,imageFormat,dimRange,fps=3,color=0):
     if currentDim[1:]!=axes:
         for n in dimRange[currentDim[0]]:
@@ -570,6 +593,15 @@ class image:
     Saving data (readable)
     '''
     def imwrite2D(self,filePath,axes=('y','x'),imageFormat='png',dimRange=None,fps=15,color=0):
+        if imageFormat=='vti':
+            rDim=[]
+            if 'x' in self.dim:
+                rDim.append('x')
+            if 'y' in self.dim:
+                rDim.append('y')
+            if 'z' in self.dim:
+                rDim.append('z')
+            image.rearrangeDim(rDim,arrangeFront=False)
         axes=list(axes)
         if type(dimRange)==type(None):
             dimRange={}

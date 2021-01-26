@@ -207,9 +207,9 @@ History:
                                                             -Image v2.6.36
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
-  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.40 -debug loadASCII for reshape order='F' and bound before changing type
+  Author: w.x.chan@gmail.com         22Jan2021           - v2.6.41 -debug loadASCII for reshape order='F' and bound before changing type
                                                             -processFunc v2.6.37
-                                                            -Image v2.6.40
+                                                            -Image v2.6.41
                                                             -GUI v2.6.19
                                                             -pointSpeckleProc v2.4.0
 
@@ -223,7 +223,7 @@ Known Bug:
 All rights reserved.
 '''
 import logging
-_version='2.6.40'
+_version='2.6.41'
 logger = logging.getLogger('medImgProc v'+_version)
 logger.info('medImgProc version '+_version)
 

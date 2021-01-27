@@ -258,11 +258,12 @@ def readVTI(filename):
     reader.Update()
     return reader.GetOutput()
 def writeVTI(imageArray,dimlen,axes,filePath,color=0):
-    dz, dy, dx = imageArray.shape
+    dz= imageArray.shape[0]
+    dy= imageArray.shape[1]
+    dx = imageArray.shape[2]
     dlx=dimlen[axes[2]]
     dly=dimlen[axes[1]]
     dlz=dimlen[axes[0]]
-    v_image = numpy_support.numpy_to_vtk(imageArray.flat)
     extent = (0, dx -1, 0, dy -1, 0, dz - 1)
     image = vtk.vtkImageData()
     image.SetOrigin(0, 0, 0)
@@ -273,16 +274,18 @@ def writeVTI(imageArray,dimlen,axes,filePath,color=0):
     # AllocateScalars
     if color:
         Ncolor=imageArray.shape[-1]
-        image.SetNumberOfScalarComponents(Ncolor)
-        image.SetScalarType(numpy_support.get_vtk_array_type(imageArray.dtype))
-        for x in range(dx):
-            for y in range(dy):
-                for z in range(dz):
-                  for component in range(Ncolor):
-                      imageData.SetScalarComponentFromDouble(x, y, z, component, imageArray[z,y,x,component])
-    else:
-        image.AllocateScalars(numpy_support.get_vtk_array_type(imageArray.dtype), 1)
+        imageflat=[]
+        for n in range(Ncolor):
+            imageflat.append(imageArray[...,n].reshape(-1))
+        imageflat=np.array(imageflat).T
+        image.AllocateScalars(numpy_support.get_vtk_array_type(imageArray.dtype), Ncolor)
+        v_image = numpy_support.numpy_to_vtk(imageflat)
         image.GetPointData().SetScalars(v_image)
+    else:
+        imageflat=imageArray.flat
+        image.AllocateScalars(numpy_support.get_vtk_array_type(imageArray.dtype), 1)
+    v_image = numpy_support.numpy_to_vtk(imageflat)
+    image.GetPointData().SetScalars(v_image)
 
     writer = vtk.vtkXMLImageDataWriter()
     writer.SetInputData(image)
@@ -298,7 +301,7 @@ def recursiveWrite(imageArray,dimlen,currentDim,axes,filePath,imageFormat,dimRan
         for n in dimRange[currentDim[0]]:
             if len(currentDim)==(4+color):
                 if imageFormat=='vti':
-                    writeVTI(imageArray[n],dimlen,currentDim[1:4],filePath+'/'+currentDim[0]+str(n)+'.vti',color=color)
+                    writeVTI(imageArray[n],dimlen,currentDim[1:4],filePath+'/'+currentDim[0]+str(n),color=color)
                 elif imageFormat!='gif':
                     imageio.mimwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),changeArraySizeTo2bitBlocks(imageArray[n],color=color),format=imageFormat,fps=fps)
                 else:
@@ -637,7 +640,7 @@ class image:
                 filePath+='.'+imageFormat
             if len(currentDim)==(3+color):
                 if imageFormat=='vti':
-                    writeVTI(saveData,self.dimlen,currentDim[:3],filePath+'.vti',color=color)
+                    writeVTI(saveData,self.dimlen,currentDim[:3],filePath,color=color)
                 elif imageFormat!='gif':
                     imageio.mimwrite(os.path.normpath(filePath+'.'+imageFormat),changeArraySizeTo2bitBlocks(saveData,color=color),format=imageFormat,fps=fps)
                 else:
@@ -844,9 +847,8 @@ class image:
         Try medpy
         '''
         err_msg=''
-        if imageFile[:-3]=='vti':
-            try:
-                img = readVTI(os.path.normpath(imageFile))
+        if imageFile[-3:]=='vti':
+            im = readVTI(os.path.normpath(imageFile))
             except Exception as e:
                 err_msg+='vtk.vtkXMLImageDataReader:'+str(e)+'\n'
             else:
@@ -860,13 +862,14 @@ class image:
                 else:
                     self.dim=dimension[:3]
                 if ncomponents>1:
-                    scalars = im.GetPointData().GetVectors()
-                    self.data = numpy_support.vtk_to_numpy(scalars).reshape((nz,ny,nx,-1),order='F')
+                    scalars = im.GetPointData().GetScalars()
+                    self.data = numpy_support.vtk_to_numpy(scalars).reshape((nz,ny,nx,-1))
                     self.color=1
                 else:
                     scalars = im.GetPointData().GetScalars()
-                    self.data = numpy_support.vtk_to_numpy(scalars).reshape((nz,ny,nx),order='F')
+                    self.data = numpy_support.vtk_to_numpy(scalars).reshape((nz,ny,nx))
                 self.dimlen={self.dim[2]:spacing[0],self.dim[1]:spacing[1],self.dim[0]:spacing[2]}
+                return
         if module=='medpy':
             try:
                 img, img_header = medpy.io.load(os.path.normpath(imageFile))
@@ -968,7 +971,6 @@ class image:
         return
     
     '''
-
     graphical user interface
     '''
     def show(self,tag='2D',**kwarg):

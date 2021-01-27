@@ -40,6 +40,8 @@ History:
                                                             -add func to save image as ascii (saveASCII) without pickle
   Author: w.x.chan@gmail.com         22Jan2021           - v2.6.41
                                                             -set saveASCII to control s.f.
+  Author: w.x.chan@gmail.com         27Jan2021           - v2.7.0
+                                                            -added imwrite3D to save as vti
                                                             
   
 Requirements:
@@ -51,7 +53,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.6.41'
+_version='2.7.0'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -245,50 +247,52 @@ def applyFunc(imageClass,func,axes,dimSlice,funcArgs):#use slice(a,b) for otherD
         transposeIndex,currentDim=arrangeDim(currentDim,newImage.dim,True)
         newData=newData.transpose(transposeIndex)
         return newData
-def recursive3DWrite(imageArray,dimlen,currentDim,axes,filePath,dimRange,color=0):
-    if currentDim[1:]!=axes:
-        for n in dimRange[currentDim[0]]:
-            newPath=os.path.normpath(filePath+'/'+currentDim[0]+str(n))
-            os.makedirs(newPath, exist_ok=True)
-            recursive3DWrite(imageArray[n],dimlen,currentDim[1:],axes,newPath,dimRange,color=color)
+def writeVTI(imageArray,dimlen,axes,filePath,color=0):
+    dz, dy, dx = imageArray.shape
+    dlx=dimlen[axes[2]]
+    dly=dimlen[axes[1]]
+    dlz=dimlen[axes[0]]
+    v_image = numpy_support.numpy_to_vtk(imageArray.flat)
+    extent = (0, dx -1, 0, dy -1, 0, dz - 1)
+    image = vtk.vtkImageData()
+    image.SetOrigin(0, 0, 0)
+    image.SetSpacing(dlx,dly,dlz)
+    image.SetDimensions(dx, dy, dz)
+    image.SetExtent(extent)
+    # SetNumberOfScalarComponents and SetScalrType were replaced by
+    # AllocateScalars
+    if color:
+        Ncolor=imageArray.shape[-1]
+        image.SetNumberOfScalarComponents(Ncolor)
+        image.SetScalarType(numpy_support.get_vtk_array_type(imageArray.dtype))
+        for x in range(dx):
+            for y in range(dy):
+                for z in range(dz):
+                  for component in range(Ncolor):
+                      imageData.SetScalarComponentFromDouble(x, y, z, component, imageArray[z,y,x,component])
     else:
-        for n in dimRange[currentDim[0]]:
-            dz, dy, dx = imageArray.shape
-            dlx=dimlen[currentDim[1]]
-            dly=dimlen[currentDim[2]]
-            dlz=dimlen[currentDim[3]]
-            v_image = numpy_support.numpy_to_vtk(imageArray.flat)
-            extent = (0, dx -1, 0, dy -1, 0, dz - 1)
-            image = vtk.vtkImageData()
-            image.SetOrigin(0, 0, 0)
-            image.SetSpacing(dlx,dly,dlz)
-            image.SetDimensions(dx, dy, dz)
-            # SetNumberOfScalarComponents and SetScalrType were replaced by
-            # AllocateScalars
-            #  image.SetNumberOfScalarComponents(1)
-            #  image.SetScalarType(numpy_support.get_vtk_array_type(n_array.dtype))
-            image.AllocateScalars(numpy_support.get_vtk_array_type(imageArray.dtype), 1)
-            image.SetExtent(extent)
-            image.GetPointData().SetScalars(v_image)
+        image.AllocateScalars(numpy_support.get_vtk_array_type(imageArray.dtype), 1)
+        image.GetPointData().SetScalars(v_image)
 
-            writer = vtk.vtkXMLImageDataWriter()
-            writer.SetInputData(image)
-            writer.SetFileName(filePath)
-            writer.Write()
-def recursive2DWrite(imageArray,currentDim,axes,filePath,imageFormat,dimRange,fps=3,color=0):
+    writer = vtk.vtkXMLImageDataWriter()
+    writer.SetInputData(image)
+    writer.SetFileName(os.path.normpath(filePath))
+    writer.Write()
+def recursiveWrite(imageArray,dimlen,currentDim,axes,filePath,imageFormat,dimRange,fps=3,color=0):
     if currentDim[1:]!=axes:
         for n in dimRange[currentDim[0]]:
             newPath=os.path.normpath(filePath+'/'+currentDim[0]+str(n))
             os.makedirs(newPath, exist_ok=True)
-            recursive2DWrite(imageArray[n],currentDim[1:],axes,newPath,imageFormat,dimRange,fps=fps,color=color)
+            recursiveWrite(imageArray[n],dimlen,currentDim[1:],axes,newPath,imageFormat,dimRange,fps=fps,color=color)
     else:
         for n in dimRange[currentDim[0]]:
             if len(currentDim)==(4+color):
-                if imageFormat!='gif':
-                    saveData=changeArraySizeTo2bitBlocks(imageArray[n],color=color)
+                if imageFormat=='vti':
+                    writeVTI(imageArray[n],dimlen,currentDim[1:4],filePath+'/'+currentDim[0]+str(n)+'.vti',color=color)
+                elif imageFormat!='gif':
+                    imageio.mimwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),changeArraySizeTo2bitBlocks(imageArray[n],color=color),format=imageFormat,fps=fps)
                 else:
-                    saveData=imageArray[n]
-                imageio.mimwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),saveData,format=imageFormat,fps=fps)
+                    imageio.mimwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),imageArray[n],format=imageFormat,fps=fps)
             elif len(currentDim)<(4+color):
                 imageio.imwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),imageArray[n])
 def changeArraySizeTo2bitBlocks(inputArray,color=0,logPower=False,base=16):
@@ -600,15 +604,6 @@ class image:
     Saving data (readable)
     '''
     def imwrite2D(self,filePath,axes=('y','x'),imageFormat='png',dimRange=None,fps=15,color=0):
-        if imageFormat=='vti':
-            rDim=[]
-            if 'x' in self.dim:
-                rDim.append('x')
-            if 'y' in self.dim:
-                rDim.append('y')
-            if 'z' in self.dim:
-                rDim.append('z')
-            image.rearrangeDim(rDim,arrangeFront=False)
         axes=list(axes)
         if type(dimRange)==type(None):
             dimRange={}
@@ -631,15 +626,18 @@ class image:
             if filePath[-(len(imageFormat)+1):]!=('.'+imageFormat):
                 filePath+='.'+imageFormat
             if len(currentDim)==(3+color):
-                if imageFormat!='gif':
-                    saveData=changeArraySizeTo2bitBlocks(saveData,color=color)
-                imageio.mimwrite(os.path.normpath(filePath),saveData,format=imageFormat,fps=fps)
+                if imageFormat=='vti':
+                    writeVTI(saveData,self.dimlen,currentDim[:3],filePath+'.vti',color=color)
+                elif imageFormat!='gif':
+                    imageio.mimwrite(os.path.normpath(filePath+'.'+imageFormat),changeArraySizeTo2bitBlocks(saveData,color=color),format=imageFormat,fps=fps)
+                else:
+                    imageio.mimwrite(os.path.normpath(filePath+'.'+imageFormat),saveData,format=imageFormat,fps=fps)
             elif len(currentDim)==(2+color):
                 imageio.imwrite(os.path.normpath(filePath),saveData)
             logger.info(str(currentDim))
         else:
             os.makedirs(filePath, exist_ok=True)
-            recursive2DWrite(saveData,currentDim,axes,filePath,imageFormat,dimRange,fps=fps,color=color)
+            recursiveWrite(saveData,self.dimlen,currentDim,axes,filePath,imageFormat,dimRange,fps=fps,color=color)
             dimlen_np=[]
             for ti in transposeIndex:
                 if self.dim[ti] not in ['RGB','RGBA']:
@@ -650,6 +648,8 @@ class image:
         #self.save(os.path.normpath(filePath+'/image.mip'))
     def mimwrite2D(self,filePath,axes=('t','y','x'),vidFormat='avi',dimRange=None,fps=15,color=0):
         self.imwrite2D(filePath,axes=axes,imageFormat=vidFormat,dimRange=dimRange,fps=fps,color=color)
+    def imwrite3D(self,filePath,axes=('z','y','x'),imageFormat='vti',dimRange=None,fps=15,color=0):
+        self.imwrite2D(filePath,axes=axes,imageFormat=imageFormat,dimRange=dimRange,fps=fps,color=color)
     '''
     saving and loading object
     '''

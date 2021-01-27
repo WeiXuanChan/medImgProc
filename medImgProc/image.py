@@ -252,6 +252,11 @@ def applyFunc(imageClass,func,axes,dimSlice,funcArgs):#use slice(a,b) for otherD
         transposeIndex,currentDim=arrangeDim(currentDim,newImage.dim,True)
         newData=newData.transpose(transposeIndex)
         return newData
+def readVTI(filename):
+    reader = vtk.vtkXMLImageDataReader()
+    reader.SetFileName(filename)
+    reader.Update()
+    return reader.GetOutput()
 def writeVTI(imageArray,dimlen,axes,filePath,color=0):
     dz, dy, dx = imageArray.shape
     dlx=dimlen[axes[2]]
@@ -839,6 +844,29 @@ class image:
         Try medpy
         '''
         err_msg=''
+        if imageFile[:-3]=='vti':
+            try:
+                img = readVTI(os.path.normpath(imageFile))
+            except Exception as e:
+                err_msg+='vtk.vtkXMLImageDataReader:'+str(e)+'\n'
+            else:
+                nx,ny,nz=im.GetDimensions()
+                orig=im.GetOrigin()
+                extent=im.GetExtent()
+                spacing=im.GetSpacing()
+                ncomponents=im.GetPointData().GetNumberOfComponents()
+                if dimension is None:
+                    self.dim=['z','y','x']
+                else:
+                    self.dim=dimension[:3]
+                if ncomponents>1:
+                    scalars = im.GetPointData().GetVectors()
+                    self.data = numpy_support.vtk_to_numpy(scalars).reshape((nz,ny,nx,-1),order='F')
+                    self.color=1
+                else:
+                    scalars = im.GetPointData().GetScalars()
+                    self.data = numpy_support.vtk_to_numpy(scalars).reshape((nz,ny,nx),order='F')
+                self.dimlen={self.dim[2]:spacing[0],self.dim[1]:spacing[1],self.dim[0]:spacing[2]}
         if module=='medpy':
             try:
                 img, img_header = medpy.io.load(os.path.normpath(imageFile))

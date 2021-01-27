@@ -72,6 +72,11 @@ try:
     import medpy.io
 except:
     pass
+try:
+    import vtk
+    from vtk.util import numpy_support
+except:
+    pass
 import pickle
 import multiprocessing
 import interpolationScheme

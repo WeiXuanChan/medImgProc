@@ -848,7 +848,8 @@ class image:
         '''
         err_msg=''
         if imageFile[-3:]=='vti':
-            im = readVTI(os.path.normpath(imageFile))
+            try:
+                im = readVTI(os.path.normpath(imageFile))
             except Exception as e:
                 err_msg+='vtk.vtkXMLImageDataReader:'+str(e)+'\n'
             else:

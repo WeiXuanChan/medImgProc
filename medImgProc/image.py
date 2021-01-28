@@ -40,7 +40,7 @@ History:
                                                             -add func to save image as ascii (saveASCII) without pickle
   Author: w.x.chan@gmail.com         22Jan2021           - v2.6.41
                                                             -set saveASCII to control s.f.
-  Author: w.x.chan@gmail.com         27Jan2021           - v2.7.0
+  Author: w.x.chan@gmail.com         27Jan2021           - v2.7.1
                                                             -added imwrite3D to save as vti
                                                             
   
@@ -53,7 +53,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.7.0'
+_version='2.7.1'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np

@@ -301,7 +301,7 @@ def recursiveWrite(imageArray,dimlen,currentDim,axes,filePath,imageFormat,dimRan
         for n in dimRange[currentDim[0]]:
             if len(currentDim)==(4+color):
                 if imageFormat=='vti':
-                    writeVTI(imageArray[n],dimlen,currentDim[1:4],filePath+'/'+currentDim[0]+str(n),color=color)
+                    writeVTI(imageArray[n],dimlen,currentDim[1:4],filePath+'/'+currentDim[0]+str(n)+'.vti',color=color)
                 elif imageFormat!='gif':
                     imageio.mimwrite(os.path.normpath(filePath+'/'+currentDim[0]+str(n)+'.'+imageFormat),changeArraySizeTo2bitBlocks(imageArray[n],color=color),format=imageFormat,fps=fps)
                 else:

@@ -624,8 +624,9 @@ class image:
             color=1
         elif color==1:
             axes+=['RGB']
+        saveData=np.copy(self.data)
         if imageFormat!='vti':
-            saveData=np.minimum(255,np.maximum(0,self.data)).astype('uint8')
+            saveData=np.minimum(255,np.maximum(0,saveData)).astype('uint8')
         currentDim=self.dim[:]
         for dimension in currentDim:#apply function to all 
             if dimension not in dimRange:

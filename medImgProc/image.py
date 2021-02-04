@@ -42,6 +42,8 @@ History:
                                                             -set saveASCII to control s.f.
   Author: w.x.chan@gmail.com         27Jan2021           - v2.7.1
                                                             -added imwrite3D to save as vti
+  Author: w.x.chan@gmail.com         04Feb2021           - v2.7.2
+                                                            -debug imwrite3D to save as vti without bounding
                                                             
   
 Requirements:
@@ -53,7 +55,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.7.1'
+_version='2.7.2'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np

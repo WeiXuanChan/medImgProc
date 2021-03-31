@@ -181,6 +181,7 @@ class gradient_ascent:
     def run(self,report=float('inf')):
         if report==True:
             report=1
+        gradient=None
         '''set gain'''
         if self.gain is None:
             self.gain=0.
@@ -211,7 +212,8 @@ class gradient_ascent:
             if error<1.:
                 break
             #fValtemp=func(self.para,*self.args)
-            gradient=self.grad()
+            if count!=1 or gradient is None:
+                gradient=self.grad()
             if self.normalize_para:
                 '''normalize gradient with errThreshold'''
                 gradient=gradient/self.errThreshold

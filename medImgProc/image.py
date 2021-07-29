@@ -44,6 +44,8 @@ History:
                                                             -added imwrite3D to save as vti
   Author: w.x.chan@gmail.com         04Feb2021           - v2.7.2
                                                             -debug imwrite3D to save as vti without bounding
+  Author: w.x.chan@gmail.com         29Jul2021           - v2.7.3
+                                                            -debug loading image as volume
                                                             
   
 Requirements:
@@ -55,7 +57,7 @@ Known Bug:
     HSV color format not supported
 All rights reserved.
 '''
-_version='2.7.2'
+_version='2.7.3'
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np

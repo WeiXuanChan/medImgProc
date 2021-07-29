@@ -885,7 +885,7 @@ class image:
                 self.data=np.array(img)
                 if dimension is None:
                     dimension=list(DEFAULT_IMG_DIMENSION)
-                    if img.shape[-1]>4 and len(dimension)==dim:
+                    if img.shape[-1]>4 and dim==3:
                         dimension=list(DEFAULT_VOL_DIMENSION)
                 self.dim=dimension
                 self.dtype=img.dtype
@@ -910,6 +910,8 @@ class image:
             dim=len(img.shape)
             if dimension is None:
                 dimension=list(DEFAULT_VOL_DIMENSION)
+                if dim==2 or (img.shape[-1]<=4 and dim==3):
+                    dimension=list(DEFAULT_IMG_DIMENSION)
             if len(dimension)<dim:
                 raise Exception('Error loading volume file.'+HINT_DIMENSION_LIST)
             else:
@@ -930,7 +932,7 @@ class image:
             dim=len(img.shape)
             if dimension is None:
                 dimension=list(DEFAULT_IMG_DIMENSION)
-                if img.shape[-1]>4 and len(dimension)==dim:
+                if img.shape[-1]>4 and dim==3:
                     dimension=list(DEFAULT_VOL_DIMENSION)
             if len(dimension)<dim:
                 raise Exception('Error loading image file.'+HINT_DIMENSION_LIST)

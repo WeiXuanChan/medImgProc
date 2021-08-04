@@ -87,7 +87,9 @@ History:
     Author: jorry.zhengyu@gmail.com    03DEC2020           - v2.6.34
                                                               -trimesh, stl export
     Author: jorry.zhengyu@gmail.com    20Jan2021           - v2.6.37
-                                                              -add option to TmapRegister (refTimeStep) to use time other than 0 as reference in Lagrangian                                                              
+                                                              -add option to TmapRegister (refTimeStep) to use time other than 0 as reference in Lagrangian     
+    Author: w.x.chan@gmail.com         04Aug2021           - v2.7.4
+                                                              -debug mask in TmapRegistration functions to image.data.dtype                                                          
                                                               
 Requirements:
     numpy.py
@@ -99,7 +101,7 @@ Known Bug:
     last point of first axis ('t') not recorded in snapDraw_black
 All rights reserved.
 '''
-_version='2.6.37'
+_version='2.7.4'
 
 import logging
 logger = logging.getLogger(__name__)
